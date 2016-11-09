@@ -2,7 +2,6 @@ package com.example.android.movielist;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Movie;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -12,7 +11,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -20,7 +18,6 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
     private GridView mGridView;
 
-    private ArrayList<Movie> mMovieList;
+    private ArrayList<MovieObject> mMovieObjectList;
 
     private String sortBy;
 
@@ -60,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mEmptyTextView = (TextView) findViewById(R.id.empty_text_view);
         //get reference for spinner
         Spinner spinner = (Spinner) findViewById(R.id.sortSpinner);
         //set listener
@@ -67,23 +65,23 @@ public class MainActivity extends AppCompatActivity {
 
         mGridView = (GridView) findViewById(R.id.movieGridView);
 
-        mAdapter = new MovieAdapter(this, new ArrayList<com.example.android.movielist.Movie>());
-//        if (savedInstanceState == null || !savedInstanceState.containsKey("key")) {
-//            //display nothing if there's no saved array
-//            mEmptyTextView.setText(R.string.noMovies);
-//            mGridView.setVisibility(GONE);
-//        } else {
-//            mMovieList = savedInstanceState.getParcelableArrayList("key");
-//            mAdapter.addAll(mMovieList);
-//            mGridView.setAdapter(mAdapter);
-//        }
+        mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
+        if (savedInstanceState == null || !savedInstanceState.containsKey("key")) {
+            //display nothing if there's no saved array
+            mEmptyTextView.setText(R.string.noMovies);
+            mGridView.setVisibility(GONE);
+        } else {
+            mMovieObjectList = savedInstanceState.getParcelableArrayList("key");
+            mAdapter.addAll(mMovieObjectList);
+            mGridView.setAdapter(mAdapter);
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if (mMovieList != null) {
-          //  outState.putParcelableArrayList("key", mMovieList);
-           // super.onSaveInstanceState(outState);
+        if (mMovieObjectList != null) {
+           outState.putParcelableArrayList("key", mMovieObjectList);
+            super.onSaveInstanceState(outState);
         }
     }
 
@@ -93,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
             //find which item was selected
             String selectedItem = parent.getItemAtPosition(pos).toString();
-            sortBy = selectedItem;
+            sortBy = selectedItem.toLowerCase();
             CheckConnection();
         }
 
@@ -115,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             task.execute(REQEST_URL);
 
             //set response to adapter
-            mAdapter = new MovieAdapter(this, new ArrayList<Movie>());
+            mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
             mGridView.setAdapter(mAdapter);
         } else {
             //if no internet connection, display message
@@ -124,27 +122,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class MovieAsyncTask extends AsyncTask<String, Void, List<Movie>>{
+    private class MovieAsyncTask extends AsyncTask<String, Void, List<MovieObject>>{
 
         @Override
-        protected List<Movie> doInBackground(String... strings) {
+        protected List<MovieObject> doInBackground(String... urls) {
             //Create Url object
-            if (strings.length < 1 || strings[0] == null){
+            if (urls.length < 1 || urls[0] == null){
                 return null;
             }
 
-            List<Movie> result = fetchMovies(strings[0]);
+            List<MovieObject> result = fetchMovies(urls[0]);
             return result;
         }
 
         @Override
-        protected void onPostExecute(List<Movie> movies) {
+        protected void onPostExecute(List<MovieObject> movies) {
             mAdapter.clear();
 
             //add found movies to the gridview
             if (movies != null && !movies.isEmpty()){
-                mMovieList = new ArrayList<>();
-                mMovieList.addAll(movies);
+                mMovieObjectList = new ArrayList<>();
+                mMovieObjectList.addAll(movies);
                 mAdapter.addAll(movies);
                 mGridView.setVisibility(View.VISIBLE);
             } else{
@@ -166,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    public static List<Movie> fetchMovies(String requestUrl){
+    public static List<MovieObject> fetchMovies(String requestUrl){
         URL url = createUrl(requestUrl);
         String jsonResponse = null;
         try {
@@ -174,16 +172,16 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
-        List<Movie> movies = extractFeatureFromJson(jsonResponse);
+        List<MovieObject> movies = extractFeatureFromJson(jsonResponse);
         return movies;
     }
 
-    public static List<Movie> extractFeatureFromJson(String movieJson) {
+    public static List<MovieObject> extractFeatureFromJson(String movieJson) {
         if (TextUtils.isEmpty(movieJson)) {
             return null;
         }
 
-        List<Movie> movies = new ArrayList<>();
+        List<MovieObject> movies = new ArrayList<>();
 
         try {
             JSONObject baseJsonResponse = new JSONObject(movieJson);
@@ -202,9 +200,9 @@ public class MainActivity extends AppCompatActivity {
                 String poster = currentMovie.getString("poster_path");
                 String rating = currentMovie.getString("vote_average");
 
-                // Create a new Movie object
-                Movie movie = new Movie(title, release, poster, rating, plot);
-                movies.add(movie);
+                // Create a new MovieObject object
+                MovieObject movieObject = new MovieObject(title, release, poster, rating, plot);
+                movies.add(movieObject);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Problem parsing the earthquake JSON results", e);

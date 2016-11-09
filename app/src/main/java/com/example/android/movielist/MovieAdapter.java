@@ -10,14 +10,12 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import static android.R.attr.resource;
-
 /**
  * Created by Rob on 11/8/2016.
  */
 
-public class MovieAdapter extends ArrayAdapter<Movie> {
-    public MovieAdapter(Context context, ArrayList<Movie> movies) {
+public class MovieAdapter extends ArrayAdapter<MovieObject> {
+    public MovieAdapter(Context context, ArrayList<MovieObject> movies) {
         super(context, 0, movies);
     }
 
@@ -31,14 +29,14 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
         }
 
         //get the current movie
-        Movie currentMovie = getItem(position);
+        MovieObject currentMovieObject = getItem(position);
 
         //attach info to the gridview
         TextView titleTV = (TextView) gridItemView.findViewById(R.id.movieTitle);
         TextView dateTV = (TextView) gridItemView.findViewById(R.id.releaseDate);
 
-        titleTV.setText(currentMovie.getMovieTitle());
-        dateTV.setText(currentMovie.getReleaseDate());
+        titleTV.setText(currentMovieObject.getMovieTitle());
+        dateTV.setText(currentMovieObject.getReleaseDate());
 
         return gridItemView;
     }
