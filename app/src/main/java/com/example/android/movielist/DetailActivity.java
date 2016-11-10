@@ -7,15 +7,22 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 /**
  * Created by Rob on 11/9/2016.
  */
 
-public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DetailActivity extends AppCompatActivity {
 
     private TextView mMovieTitleTV;
+    private TextView mMoviePlotTV;
+    private TextView mMovieVoteTV;
+    private TextView mMovieDateTV;
+    private ImageView mMoviePosterIV;
 
     MovieObject selectedMovie;
 
@@ -25,27 +32,20 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         setContentView(R.layout.movie_detail);
 
         mMovieTitleTV = (TextView) findViewById(R.id.movieDetailsTitle);
+        mMovieDateTV = (TextView) findViewById(R.id.movieDetailsDate);
+        mMoviePlotTV = (TextView) findViewById(R.id.movieDetailsPlot);
+        mMovieVoteTV = (TextView) findViewById(R.id.movieDetailsVote);
+        mMoviePosterIV = (ImageView) findViewById(R.id.movieDetailsPoster);
 
         //get intent from MainActivity
-       Intent intent = getIntent();
-       selectedMovie = (MovieObject) intent.getParcelableExtra("selectedMovie");
+        Intent intent = getIntent();
+        selectedMovie = (MovieObject) intent.getParcelableExtra("selectedMovie");
 
         mMovieTitleTV.setText(selectedMovie.getMovieTitle());
-
+        mMovieDateTV.setText(selectedMovie.getReleaseDate());
+        mMoviePlotTV.setText(selectedMovie.getPlotSyn());
+        mMovieVoteTV.setText(selectedMovie.getVoteAvg());
+        Picasso.with(this).load(selectedMovie.getPosterUrl()).into(mMoviePosterIV);
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
 }

@@ -41,7 +41,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:numColumns="auto_fit"
-            />
+            android:horizontalSpacing="0dp"
+            android:verticalSpacing="6dp"
+            android:columnWidth="150dp"/>
 
         <TextView
             android:id="@+id/empty_text_view"
