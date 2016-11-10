@@ -2,6 +2,8 @@ package com.example.android.movielist;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Movie;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -75,6 +77,16 @@ public class MainActivity extends AppCompatActivity {
             mAdapter.addAll(mMovieObjectList);
             mGridView.setAdapter(mAdapter);
         }
+
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+               MovieObject selectedMovie = (MovieObject) adapterView.getItemAtPosition(i);
+                intent.putExtra("selectedMovie", selectedMovie);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -106,11 +118,11 @@ public class MainActivity extends AppCompatActivity {
         if (networkInfo != null && networkInfo.isConnected()){
 
             //build the string for the URL request with base, sort choice, and api
-            String REQEST_URL = BASE_URL + sortBy + API;
+            String REQUEST_URL = BASE_URL + sortBy + API;
 
             //start Async task
             MovieAsyncTask task = new MovieAsyncTask();
-            task.execute(REQEST_URL);
+            task.execute(REQUEST_URL);
 
             //set response to adapter
             mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
@@ -161,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e(LOG_TAG, "ERROR with creating URL", exception);
             return null;
         }
-        return null;
+        return url;
     }
 
     public static List<MovieObject> fetchMovies(String requestUrl){

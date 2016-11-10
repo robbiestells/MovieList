@@ -6,7 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -31,12 +34,10 @@ public class MovieAdapter extends ArrayAdapter<MovieObject> {
         //get the current movie
         MovieObject currentMovieObject = getItem(position);
 
-        //attach info to the gridview
-        TextView titleTV = (TextView) gridItemView.findViewById(R.id.movieTitle);
-        TextView dateTV = (TextView) gridItemView.findViewById(R.id.releaseDate);
+        //attach poster to the gridview
+        ImageView posterIV = (ImageView) gridItemView.findViewById(R.id.posterImage);
 
-        titleTV.setText(currentMovieObject.getMovieTitle());
-        dateTV.setText(currentMovieObject.getReleaseDate());
+        Picasso.with(getContext()).load(currentMovieObject.getPosterUrl()).into(posterIV);
 
         return gridItemView;
     }

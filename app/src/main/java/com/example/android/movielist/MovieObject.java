@@ -64,7 +64,7 @@ public class MovieObject implements Parcelable {
     }
 
     public String getPosterUrl(){
-        return posterUrl;
+        return "http://image.tmdb.org/t/p/w185" + posterUrl;
     }
 
     public String getVoteAvg(){

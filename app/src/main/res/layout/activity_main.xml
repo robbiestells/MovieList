@@ -13,7 +13,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -33,12 +34,14 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
                 android:entries="@array/spinnerChoices" />
-        </LinearLayout>
+       </LinearLayout>
 
         <GridView
             android:id="@+id/movieGridView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:numColumns="auto_fit"
+            />
 
         <TextView
             android:id="@+id/empty_text_view"
