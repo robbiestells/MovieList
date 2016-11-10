@@ -29,9 +29,9 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:text="Saving private ryan"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/holo_red_light"
             android:textSize="24sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
