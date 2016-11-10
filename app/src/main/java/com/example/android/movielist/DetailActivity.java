@@ -39,8 +39,11 @@ public class DetailActivity extends AppCompatActivity {
 
         //get intent from MainActivity
         Intent intent = getIntent();
+
+        //get selected movie
         selectedMovie = (MovieObject) intent.getParcelableExtra("selectedMovie");
 
+        //assign movie data to views
         mMovieTitleTV.setText(selectedMovie.getMovieTitle());
         mMovieDateTV.setText(selectedMovie.getReleaseDate());
         mMoviePlotTV.setText(selectedMovie.getPlotSyn());

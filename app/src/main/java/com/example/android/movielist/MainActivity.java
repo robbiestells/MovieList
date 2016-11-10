@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -55,15 +57,34 @@ public class MainActivity extends AppCompatActivity {
     private String sortBy;
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_popularity){
+            sortBy = getString(R.string.popular);
+            CheckConnection();
+        } else if (id == R.id.action_top){
+            sortBy = getString(R.string.top_rated);
+            CheckConnection();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //set default to sort by popular movies
+        sortBy = getString(R.string.popular);
+
         mEmptyTextView = (TextView) findViewById(R.id.empty_text_view);
-        //get reference for spinner
-        Spinner spinner = (Spinner) findViewById(R.id.sortSpinner);
-        //set listener
-        spinner.setOnItemSelectedListener(new SpinnerActivity());
 
         mGridView = (GridView) findViewById(R.id.movieGridView);
 
@@ -87,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        CheckConnection();
     }
 
     @Override
@@ -97,21 +120,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public class SpinnerActivity extends Activity implements AdapterView.OnItemSelectedListener {
-
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
-            //find which item was selected
-            String selectedItem = parent.getItemAtPosition(pos).toString();
-            sortBy = selectedItem.toLowerCase();
-            CheckConnection();
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-            //do nothing
-        }
-    }
     public void CheckConnection(){
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -204,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < resutlArray.length(); i++) {
                 JSONObject currentMovie = resutlArray.getJSONObject(i);
 
-//                JSONObject title = currentBook.getJSONObject("title");
                 // Extract out data
                 String title = currentMovie.getString("title");
                 String release = currentMovie.getString("release_date");
