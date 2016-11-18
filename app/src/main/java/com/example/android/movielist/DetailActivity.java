@@ -7,6 +7,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -93,6 +95,16 @@ public class DetailActivity extends AppCompatActivity {
         Picasso.with(this).load(selectedMovie.getPosterUrl()).into(mMoviePosterIV);
 
         movieId = selectedMovie.getMovieId();
+
+        mTrailerLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                TrailerObject selectedTrailer = (TrailerObject) adapterView.getItemAtPosition(i);
+                intent.setData(Uri.parse(selectedTrailer.getTrailerUrl()));
+                startActivity(intent);
+            }
+        });
 
         CheckConnection();
     }
