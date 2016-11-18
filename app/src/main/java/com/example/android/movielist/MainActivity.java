@@ -66,10 +66,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_popularity){
+        //when item is selected from menu, start getting movie list
+        if (id == R.id.action_popularity) {
             sortBy = getString(R.string.popular);
             CheckConnection();
-        } else if (id == R.id.action_top){
+        } else if (id == R.id.action_top) {
             sortBy = getString(R.string.top_rated);
             CheckConnection();
         }
@@ -89,41 +90,47 @@ public class MainActivity extends AppCompatActivity {
         mGridView = (GridView) findViewById(R.id.movieGridView);
 
         mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
+
+        //check to see if movies have already been found
         if (savedInstanceState == null || !savedInstanceState.containsKey("key")) {
-            //display nothing if there's no saved array
+            //display empty message if there's no saved array
             mEmptyTextView.setText(R.string.noMovies);
             mGridView.setVisibility(GONE);
         } else {
+            //otherwise get the loaded list
             mMovieObjectList = savedInstanceState.getParcelableArrayList("key");
             mAdapter.addAll(mMovieObjectList);
             mGridView.setAdapter(mAdapter);
         }
 
+        //set click listener for the gridview and pass Movie object to details page
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-               MovieObject selectedMovie = (MovieObject) adapterView.getItemAtPosition(i);
+                MovieObject selectedMovie = (MovieObject) adapterView.getItemAtPosition(i);
                 intent.putExtra("selectedMovie", selectedMovie);
                 startActivity(intent);
             }
         });
 
+        //start process
         CheckConnection();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (mMovieObjectList != null) {
-           outState.putParcelableArrayList("key", mMovieObjectList);
+            outState.putParcelableArrayList("key", mMovieObjectList);
             super.onSaveInstanceState(outState);
         }
     }
 
-    public void CheckConnection(){
+    //check to see if there's internet connection
+    public void CheckConnection() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()){
+        if (networkInfo != null && networkInfo.isConnected()) {
 
             //build the string for the URL request with base, sort choice, and api
             String REQUEST_URL = BASE_URL + sortBy + API;
@@ -142,15 +149,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class MovieAsyncTask extends AsyncTask<String, Void, List<MovieObject>>{
+    private class MovieAsyncTask extends AsyncTask<String, Void, List<MovieObject>> {
 
         @Override
         protected List<MovieObject> doInBackground(String... urls) {
             //Create Url object
-            if (urls.length < 1 || urls[0] == null){
+            if (urls.length < 1 || urls[0] == null) {
                 return null;
             }
 
+            //get movie list with url
             List<MovieObject> result = fetchMovies(urls[0]);
             return result;
         }
@@ -160,31 +168,33 @@ public class MainActivity extends AppCompatActivity {
             mAdapter.clear();
 
             //add found movies to the gridview
-            if (movies != null && !movies.isEmpty()){
+            if (movies != null && !movies.isEmpty()) {
                 mMovieObjectList = new ArrayList<>();
                 mMovieObjectList.addAll(movies);
                 mAdapter.addAll(movies);
                 mGridView.setVisibility(View.VISIBLE);
-            } else{
-                //display no movies found text
+            } else {
+                //if none found, display no movies found text
                 mEmptyTextView.setText(R.string.noMovies);
                 mGridView.setVisibility(GONE);
             }
         }
     }
 
-    private static URL createUrl(String stringUrl){
+    //create URL out of string
+    private static URL createUrl(String stringUrl) {
         URL url = null;
         try {
             url = new URL(stringUrl);
-        } catch (MalformedURLException exception){
+        } catch (MalformedURLException exception) {
             Log.e(LOG_TAG, "ERROR with creating URL", exception);
             return null;
         }
         return url;
     }
 
-    public static List<MovieObject> fetchMovies(String requestUrl){
+    //get the json string from url
+    public static List<MovieObject> fetchMovies(String requestUrl) {
         URL url = createUrl(requestUrl);
         String jsonResponse = null;
         try {
@@ -196,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
         return movies;
     }
 
+    //get the movie objects from the json
     public static List<MovieObject> extractFeatureFromJson(String movieJson) {
         if (TextUtils.isEmpty(movieJson)) {
             return null;
@@ -206,11 +217,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             JSONObject baseJsonResponse = new JSONObject(movieJson);
 
-            JSONArray resutlArray = baseJsonResponse.getJSONArray("results");
+            JSONArray resultArray = baseJsonResponse.getJSONArray("results");
 
             // For each movie in the array, create a Book object and add it to the ArrayList
-            for (int i = 0; i < resutlArray.length(); i++) {
-                JSONObject currentMovie = resutlArray.getJSONObject(i);
+            for (int i = 0; i < resultArray.length(); i++) {
+                JSONObject currentMovie = resultArray.getJSONObject(i);
 
                 // Extract out data
                 String title = currentMovie.getString("title");
@@ -218,14 +229,16 @@ public class MainActivity extends AppCompatActivity {
                 String plot = currentMovie.getString("overview");
                 String poster = currentMovie.getString("poster_path");
                 String rating = currentMovie.getString("vote_average");
+                String movieId = currentMovie.getString("id");
 
                 // Create a new MovieObject object
-                MovieObject movieObject = new MovieObject(title, release, poster, rating, plot);
+                MovieObject movieObject = new MovieObject(title, release, poster, rating, plot, movieId);
                 movies.add(movieObject);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Problem parsing the earthquake JSON results", e);
         }
+        //return movie list
         return movies;
     }
 

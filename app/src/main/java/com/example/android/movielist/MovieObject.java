@@ -14,13 +14,15 @@ public class MovieObject implements Parcelable {
     private String posterUrl;
     private String voteAvg;
     private String plotSyn;
+    private String movieId;
 
-    public MovieObject(String title, String release, String poster, String vote, String plot){
+    public MovieObject(String title, String release, String poster, String vote, String plot, String id){
         movieTitle = title;
         releaseDate = release;
         posterUrl = poster;
         voteAvg = vote;
         plotSyn = plot;
+        movieId = id;
     }
 
     private MovieObject(Parcel in){
@@ -29,6 +31,7 @@ public class MovieObject implements Parcelable {
         posterUrl = in.readString();
         voteAvg = in.readString();
         plotSyn = in.readString();
+        movieId = in.readString();
     }
 
     @Override
@@ -43,6 +46,7 @@ public class MovieObject implements Parcelable {
         parcel.writeString(posterUrl);
         parcel.writeString(voteAvg);
         parcel.writeString(plotSyn);
+        parcel.writeString(movieId);
     }
 
     public static final Parcelable.Creator<MovieObject> CREATOR = new Parcelable.Creator<MovieObject>(){
@@ -74,4 +78,6 @@ public class MovieObject implements Parcelable {
     public String getPlotSyn(){
         return plotSyn;
     }
+
+    public String getMovieId(){return movieId; }
 }

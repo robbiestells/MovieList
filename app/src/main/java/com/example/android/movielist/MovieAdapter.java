@@ -36,7 +36,6 @@ public class MovieAdapter extends ArrayAdapter<MovieObject> {
 
         //attach poster to the gridview
         ImageView posterIV = (ImageView) gridItemView.findViewById(R.id.posterImage);
-
         Picasso.with(getContext()).load(currentMovieObject.getPosterUrl()).into(posterIV);
 
         return gridItemView;

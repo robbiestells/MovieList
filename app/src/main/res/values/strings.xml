@@ -8,4 +8,6 @@
     <string name="topRated">Top Rated</string>
     <string name="top_rated">top_rated</string>
     <string name="popular">popular</string>
+    <string name="released">Released:</string>
+    <string name="Score">Score:</string>
 </resources>
