@@ -1,6 +1,7 @@
 package com.example.android.movielist;
 
 import android.app.LoaderManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
@@ -20,7 +21,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.android.movielist.data.FavoritesContract;
+import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -79,7 +83,7 @@ public class DetailActivity extends AppCompatActivity {
         mMoviePlotTV = (TextView) findViewById(R.id.movieDetailsPlot);
         mMovieVoteTV = (TextView) findViewById(R.id.movieDetailsVote);
         mMoviePosterIV = (ImageView) findViewById(R.id.movieDetailsPoster);
-        mTrailerLV = (ListView) findViewById(R.id.trailerListView) ;
+        mTrailerLV = (ListView) findViewById(R.id.trailerListView);
 
         //get intent from MainActivity
         Intent intent = getIntent();
@@ -109,6 +113,40 @@ public class DetailActivity extends AppCompatActivity {
         CheckConnection();
     }
 
+    public void FavoriteMovie_Clicked(View view) {
+        //make sure all fields are filled out
+//        if (TextUtils.isEmpty(mNameEditText.getText())) {
+//            Toast.makeText(this, "Name Required", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+
+        //get all data from fields
+        String movieId = selectedMovie.getMovieId();
+        String movieTitle = selectedMovie.getMovieTitle();
+        String moviePlot = selectedMovie.getPlotSyn();
+        String moviePoster = selectedMovie.getPosterUrl();
+        String movieRelease = selectedMovie.getReleaseDate();
+        String movieVote = selectedMovie.getVoteAvg();
+
+        //put all values into ContentValues
+        ContentValues values = new ContentValues();
+        values.put(FavoriteEntry.COLUMN_MOVIE_ID, movieId);
+        values.put(FavoriteEntry.COLUMN_MOVIE_PLOT, moviePlot);
+        values.put(FavoriteEntry.COLUMN_MOVIE_POSTER, moviePoster);
+        values.put(FavoriteEntry.COLUMN_MOVIE_RATING, movieVote);
+        values.put(FavoriteEntry.COLUMN_MOVIE_RELEASED, movieRelease);
+        values.put(FavoriteEntry.COLUMN_MOVIE_TITLE, movieTitle);
+
+
+        //if new product, insert values to new row and show Toast, otherwise, update product row
+        Uri newUri = getContentResolver().insert(FavoriteEntry.CONTENT_URI, values);
+        if (newUri == null) {
+            Toast.makeText(this, "insert failed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "insert successful", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     //check to see if there's internet connection
     public void CheckConnection() {
@@ -129,8 +167,8 @@ public class DetailActivity extends AppCompatActivity {
 
         } else {
             //if no internet connection, display message
-           // mGridView.setVisibility(GONE);
-           // mEmptyTextView.setText(R.string.noConn);
+            // mGridView.setVisibility(GONE);
+            // mEmptyTextView.setText(R.string.noConn);
         }
     }
 
@@ -214,7 +252,7 @@ public class DetailActivity extends AppCompatActivity {
                 String site = currentTrailer.getString("site");
 
                 String trailerUrl;
-                if (site.equals("YouTube")){
+                if (site.equals("YouTube")) {
                     trailerUrl = "https://www.youtube.com/watch?v=" + youtubeTrailerKey;
                 } else {
                     trailerUrl = null;
