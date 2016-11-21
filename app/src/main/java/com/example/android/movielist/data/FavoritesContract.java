@@ -39,8 +39,8 @@ public class FavoritesContract {
         public static final String COLUMN_MOVIE_TITLE = "movie_title";
         public static final String COLUMN_MOVIE_POSTER = "movie_poster";
         public static final String COLUMN_MOVIE_RELEASED = "movie_release";
-        public static final String COLUMN_MOVIE_RATING = "movie_release";
-        public static final String COLUMN_MOVIE_PLOT = "movie_release";
+        public static final String COLUMN_MOVIE_RATING = "movie_rating";
+        public static final String COLUMN_MOVIE_PLOT = "movie_plot";
 
     }
 }

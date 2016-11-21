@@ -131,12 +131,11 @@ public class DetailActivity extends AppCompatActivity {
         //put all values into ContentValues
         ContentValues values = new ContentValues();
         values.put(FavoriteEntry.COLUMN_MOVIE_ID, movieId);
-        values.put(FavoriteEntry.COLUMN_MOVIE_PLOT, moviePlot);
-        values.put(FavoriteEntry.COLUMN_MOVIE_POSTER, moviePoster);
-        values.put(FavoriteEntry.COLUMN_MOVIE_RATING, movieVote);
-        values.put(FavoriteEntry.COLUMN_MOVIE_RELEASED, movieRelease);
         values.put(FavoriteEntry.COLUMN_MOVIE_TITLE, movieTitle);
-
+        values.put(FavoriteEntry.COLUMN_MOVIE_POSTER, moviePoster);
+        values.put(FavoriteEntry.COLUMN_MOVIE_RELEASED, movieRelease);
+        values.put(FavoriteEntry.COLUMN_MOVIE_RATING, movieVote);
+        values.put(FavoriteEntry.COLUMN_MOVIE_PLOT, moviePlot);
 
         //if new product, insert values to new row and show Toast, otherwise, update product row
         Uri newUri = getContentResolver().insert(FavoriteEntry.CONTENT_URI, values);
