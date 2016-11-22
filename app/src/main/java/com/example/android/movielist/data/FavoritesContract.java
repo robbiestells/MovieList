@@ -23,7 +23,7 @@ public class FavoritesContract {
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_FAVORITE);
 
         //string with table uri
-        public static final String CONTENT_TYPE =
+        public static final String CONTENT_LIST_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_FAVORITE;
 
         //string with item uri
@@ -38,7 +38,7 @@ public class FavoritesContract {
         public static final String COLUMN_MOVIE_ID = "movie_id";
         public static final String COLUMN_MOVIE_TITLE = "movie_title";
         public static final String COLUMN_MOVIE_POSTER = "movie_poster";
-        public static final String COLUMN_MOVIE_RELEASED = "movie_release";
+        public static final String COLUMN_MOVIE_RELEASED = "release";
         public static final String COLUMN_MOVIE_RATING = "movie_rating";
         public static final String COLUMN_MOVIE_PLOT = "movie_plot";
 

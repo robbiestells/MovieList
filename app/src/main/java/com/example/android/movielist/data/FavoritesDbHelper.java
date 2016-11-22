@@ -11,9 +11,9 @@ import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
  */
 
 public class FavoritesDbHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
-    static final String DATABASE_NAME = "favorites.db";
+    private static final String DATABASE_NAME = "favorite.db";
 
     public FavoritesDbHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -25,11 +25,10 @@ public class FavoritesDbHelper extends SQLiteOpenHelper {
                 FavoriteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 FavoriteEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL, " +
                 FavoriteEntry.COLUMN_MOVIE_TITLE + " TEXT, " +
-                FavoriteEntry.COLUMN_MOVIE_POSTER + " TEXT " +
-                FavoriteEntry.COLUMN_MOVIE_RELEASED + " TEXT " +
-                FavoriteEntry.COLUMN_MOVIE_RATING + " TEXT " +
-                FavoriteEntry.COLUMN_MOVIE_PLOT + " TEXT " +
-                " );";
+                FavoriteEntry.COLUMN_MOVIE_POSTER + " TEXT, " +
+                FavoriteEntry.COLUMN_MOVIE_RELEASED + " TEXT, " +
+                FavoriteEntry.COLUMN_MOVIE_RATING + " TEXT, " +
+                FavoriteEntry.COLUMN_MOVIE_PLOT + " TEXT);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_FAVORITES_TABLE);
     }

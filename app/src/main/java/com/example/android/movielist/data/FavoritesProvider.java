@@ -17,7 +17,7 @@ import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
  */
 
 public class FavoritesProvider extends ContentProvider{
-    private static final String LOG_TAG = FavoritesProvider.class.getSimpleName();
+    public static final String LOG_TAG = FavoritesProvider.class.getSimpleName();
 
     private FavoritesDbHelper mHelper;
 
@@ -70,7 +70,7 @@ public class FavoritesProvider extends ContentProvider{
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case FAVORITE:
-                return FavoriteEntry.CONTENT_TYPE;
+                return FavoriteEntry.CONTENT_LIST_TYPE;
             case FAVORITE_ID:
                 return FavoriteEntry.CONTENT_ITEM_TYPE;
             default:
@@ -90,16 +90,16 @@ public class FavoritesProvider extends ContentProvider{
         }
     }
 
-    private Uri insertFavorite(Uri uri, ContentValues contentValues) {
+    private Uri insertFavorite(Uri uri, ContentValues values) {
         //Check that movie id is not null
-        String name = contentValues.getAsString(FavoriteEntry.COLUMN_MOVIE_ID);
+        String name = values.getAsString(FavoriteEntry.COLUMN_MOVIE_ID);
         if (name == null) {
             throw new IllegalArgumentException("Product requires a name");
         }
 
         SQLiteDatabase database = mHelper.getWritableDatabase();
 
-        long id = database.insert(FavoriteEntry.TABLE_NAME, null, contentValues);
+        long id = database.insert(FavoriteEntry.TABLE_NAME, null, values);
 
         if (id == -1) {
             Log.e(LOG_TAG, "Failed to insert row for " + uri);
