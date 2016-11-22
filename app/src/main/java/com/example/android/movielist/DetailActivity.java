@@ -3,6 +3,7 @@ package com.example.android.movielist;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -49,12 +50,16 @@ import static android.view.View.GONE;
  * Created by Rob on 11/9/2016.
  */
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = DetailActivity.class.getSimpleName();
 
     private static String BASE_URL = "https://api.themoviedb.org/3/movie/";
 
     private static String API = "/videos?api_key=7c14a6a8397181fb121e60bbdf0cd991";
+
+    private static final int LOAD_FAVORITE = 0;
+
+    private Uri mCurrentMovieUri;
 
     private TrailerAdapter mAdapter;
 
@@ -87,18 +92,24 @@ public class DetailActivity extends AppCompatActivity {
 
         //get intent from MainActivity
         Intent intent = getIntent();
+        mCurrentMovieUri = intent.getData();
 
-        //get selected movie
-        selectedMovie = (MovieObject) intent.getParcelableExtra("selectedMovie");
+        if (mCurrentMovieUri != null) {
+            getLoaderManager().initLoader(LOAD_FAVORITE, null, this);
 
-        //assign movie data to views
-        mMovieTitleTV.setText(selectedMovie.getMovieTitle());
-        mMovieDateTV.setText(selectedMovie.getReleaseDate());
-        mMoviePlotTV.setText(selectedMovie.getPlotSyn());
-        mMovieVoteTV.setText(selectedMovie.getVoteAvg());
-        Picasso.with(this).load(selectedMovie.getPosterUrl()).into(mMoviePosterIV);
+        } else {
+            //get selected movie
+            selectedMovie = (MovieObject) intent.getParcelableExtra("selectedMovie");
 
-        movieId = selectedMovie.getMovieId();
+            //assign movie data to views
+            mMovieTitleTV.setText(selectedMovie.getMovieTitle());
+            mMovieDateTV.setText(selectedMovie.getReleaseDate());
+            mMoviePlotTV.setText(selectedMovie.getPlotSyn());
+            mMovieVoteTV.setText(selectedMovie.getVoteAvg());
+            Picasso.with(this).load(selectedMovie.getPosterUrl()).into(mMoviePosterIV);
+
+            movieId = selectedMovie.getMovieId();
+        }
 
         mTrailerLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -171,40 +182,106 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
-    private class DetailsAsyncTask extends AsyncTask<String, Void, List<TrailerObject>> {
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                FavoriteEntry._ID,
+                FavoriteEntry.COLUMN_MOVIE_ID,
+                FavoriteEntry.COLUMN_MOVIE_PLOT,
+                FavoriteEntry.COLUMN_MOVIE_POSTER,
+                FavoriteEntry.COLUMN_MOVIE_RATING,
+                FavoriteEntry.COLUMN_MOVIE_RELEASED,
+                FavoriteEntry.COLUMN_MOVIE_TITLE
+        };
+        return new CursorLoader(
+                this,
+                mCurrentMovieUri,
+                projection,
+                null,
+                null,
+                null
+        );
+    }
 
-        @Override
-        protected List<TrailerObject> doInBackground(String... urls) {
-            //Create Url object
-            if (urls.length < 1 || urls[0] == null) {
-                return null;
-            }
-
-            //get movie list with url
-            List<TrailerObject> result = fetchTrailers(urls[0]);
-            return result;
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data == null || data.getCount() < 1) {
+            return;
         }
+        updateViews(data);
+    }
 
-        @Override
-        protected void onPostExecute(List<TrailerObject> trailers) {
-//            mAdapter.clear();
+    private void updateViews(Cursor data) {
+        //if the cursor is not null, load data into views
+        if (data.moveToFirst()) {
+            int nameColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_TITLE);
+            int plotColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_PLOT);
+            int posterColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_POSTER);
+            int ratingColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_RATING);
+            int releaseColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_RELEASED);
+            int idColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_ID);
 
-            //add found movies to the gridview
-            if (trailers != null && !trailers.isEmpty()) {
-                mTrailers = new ArrayList<>();
-                mTrailers.addAll(trailers);
-                mAdapter.addAll(trailers);
-                mTrailerLV.setVisibility(View.VISIBLE);
+            String name = data.getString(nameColumnIndex);
+            String plot = data.getString(plotColumnIndex);
+            String poster = data.getString(posterColumnIndex);
+            String rating = data.getString(ratingColumnIndex);
+            String release = data.getString(releaseColumnIndex);
+            String id = data.getString(idColumnIndex);
 
-            } else {
-                //if none found, display no movies found text
-//                mEmptyTextView.setText(R.string.noMovies);
-                mTrailerLV.setVisibility(GONE);
-            }
+            mMovieTitleTV.setText(name);
+            mMoviePlotTV.setText(plot);
+            mMovieVoteTV.setText(rating);
+            mMovieDateTV.setText(release);
+            movieId = id;
+            Picasso.with(this).load(poster).into(mMoviePosterIV);
         }
     }
 
-    //create URL out of string
+        @Override
+        public void onLoaderReset (Loader<Cursor> loader) {
+            //on reset, clear all fields
+            mMovieTitleTV.setText("");
+            mMoviePlotTV.setText("");
+            mMovieVoteTV.setText("");
+            mMovieDateTV.setText("");
+            movieId = "";
+        }
+
+        private class DetailsAsyncTask extends AsyncTask<String, Void, List<TrailerObject>> {
+
+            @Override
+            protected List<TrailerObject> doInBackground(String... urls) {
+                //Create Url object
+                if (urls.length < 1 || urls[0] == null) {
+                    return null;
+                }
+
+                //get movie list with url
+                List<TrailerObject> result = fetchTrailers(urls[0]);
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(List<TrailerObject> trailers) {
+//            mAdapter.clear();
+
+                //add found movies to the gridview
+                if (trailers != null && !trailers.isEmpty()) {
+                    mTrailers = new ArrayList<>();
+                    mTrailers.addAll(trailers);
+                    mAdapter.addAll(trailers);
+                    mTrailerLV.setVisibility(View.VISIBLE);
+
+                } else {
+                    //if none found, display no movies found text
+//                mEmptyTextView.setText(R.string.noMovies);
+                    mTrailerLV.setVisibility(GONE);
+                }
+            }
+        }
+
+        //create URL out of string
+
     private static URL createUrl(String stringUrl) {
         URL url = null;
         try {

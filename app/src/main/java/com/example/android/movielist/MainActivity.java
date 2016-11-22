@@ -1,6 +1,11 @@
 package com.example.android.movielist;
 
 import android.app.Activity;
+import android.content.ContentUris;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
@@ -26,6 +31,7 @@ import android.widget.TextView;
 import com.example.android.movielist.data.FavoritesContract;
 import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
 import com.example.android.movielist.data.FavoritesCursorAdapter;
+import com.example.android.movielist.data.FavoritesDbHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,10 +48,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.R.attr.data;
 import static android.R.attr.id;
+import static android.os.Build.VERSION_CODES.M;
 import static android.view.View.GONE;
 
-public class MainActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -69,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
 
     private String sortBy;
 
+    FavoritesDbHelper mHelper;
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
@@ -87,19 +97,25 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             sortBy = getString(R.string.top_rated);
             CheckConnection();
         } else if (id == R.id.action_favorite) {
+            mAdapter.clear();
             sortBy = getString(R.string.favorite);
-            getFavorites();
+            //mMovieObjectList = getFavoriteMovies();
+
+            //add found movies to the gridview
+//            if (mMovieObjectList != null && !mMovieObjectList.isEmpty()) {
+////                mMovieObjectList = new ArrayList<>();
+////                mMovieObjectList.addAll(movies);
+//                mAdapter.addAll(mMovieObjectList);
+//                mGridView.setVisibility(View.VISIBLE);
+//            } else {
+//                //if none found, display no movies found text
+//                mEmptyTextView.setText(R.string.noMovies);
+//                mGridView.setVisibility(GONE);
+//            }
+
+            getFavoriteMovies();
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void getFavorites() {
-        //set up adapter
-        mFavoriteAdapter = new FavoritesCursorAdapter(this, null);
-        mGridView.setAdapter(mFavoriteAdapter);
-
-        //kick off loader
-        getSupportLoaderManager().initLoader(URL_LOADER, null, this);
     }
 
     @Override
@@ -133,8 +149,14 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                MovieObject selectedMovie = (MovieObject) adapterView.getItemAtPosition(i);
-                intent.putExtra("selectedMovie", selectedMovie);
+
+                if (sortBy.equals(getString(R.string.favorite))){
+                    Uri currentProductUri = ContentUris.withAppendedId(FavoriteEntry.CONTENT_URI, id);
+                    intent.setData(currentProductUri);
+                } else {
+                    MovieObject selectedMovie = (MovieObject) adapterView.getItemAtPosition(i);
+                    intent.putExtra("selectedMovie", selectedMovie);
+                }
                 startActivity(intent);
             }
         });
@@ -165,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             task.execute(REQUEST_URL);
 
             //set response to adapter
+
             mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
             mGridView.setAdapter(mAdapter);
         } else {
@@ -172,37 +195,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             mGridView.setVisibility(GONE);
             mEmptyTextView.setText(R.string.noConn);
         }
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] projection = {
-                FavoriteEntry._ID,
-                FavoriteEntry.COLUMN_MOVIE_ID,
-                FavoriteEntry.COLUMN_MOVIE_PLOT,
-                FavoriteEntry.COLUMN_MOVIE_POSTER,
-                FavoriteEntry.COLUMN_MOVIE_RATING,
-                FavoriteEntry.COLUMN_MOVIE_RELEASED,
-                FavoriteEntry.COLUMN_MOVIE_TITLE
-        };
-        return new CursorLoader(
-                this,
-                FavoriteEntry.CONTENT_URI,
-                projection,
-                null,
-                null,
-                null
-        );
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mFavoriteAdapter.swapCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mFavoriteAdapter.swapCursor(null);
     }
 
     private class MovieAsyncTask extends AsyncTask<String, Void, List<MovieObject>> {
@@ -347,5 +339,89 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             }
         }
         return output.toString();
+    }
+
+    //try creating a list of all favorite movies
+    public ArrayList<MovieObject> getFavoriteMovies(){
+        // Select All Query
+        String selectQuery = "SELECT * FROM SOME_TABLE";
+        // Get the isntance of the database
+        mHelper = new FavoritesDbHelper(this);
+        SQLiteDatabase db = mHelper.getWritableDatabase();
+        //get the cursor you're going to use
+
+        String[] projection = {
+                FavoriteEntry._ID,
+                FavoriteEntry.COLUMN_MOVIE_ID,
+                FavoriteEntry.COLUMN_MOVIE_PLOT,
+                FavoriteEntry.COLUMN_MOVIE_POSTER,
+                FavoriteEntry.COLUMN_MOVIE_RATING,
+                FavoriteEntry.COLUMN_MOVIE_RELEASED,
+                FavoriteEntry.COLUMN_MOVIE_TITLE
+        };
+
+        Cursor cursor = db.query(FavoriteEntry.TABLE_NAME, projection, null, null, null, null, null);
+
+        //this is optional - if you want to return one object
+        //you don't need a list
+        ArrayList<MovieObject> movieList = new ArrayList<MovieObject>();
+
+        //you should always use the try catch statement incase
+        //something goes wrong when trying to read the data
+        try
+        {
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    //the .getString(int x) method of the cursor returns the column
+                    //of the table your query returned
+                    int nameColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_TITLE);
+                    int plotColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_PLOT);
+                    int posterColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_POSTER);
+                    int ratingColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_RATING);
+                    int releaseColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_RELEASED);
+                    int idColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_ID);
+
+                    String name = cursor.getString(nameColumnIndex);
+                    String plot = cursor.getString(plotColumnIndex);
+                    String poster = cursor.getString(posterColumnIndex);
+                    String rating = cursor.getString(ratingColumnIndex);
+                    String release = cursor.getString(releaseColumnIndex);
+                    String id = cursor.getString(idColumnIndex);
+
+                    // Create a new MovieObject object
+                    MovieObject movieObject = new MovieObject(name, release, poster, rating, plot, id);
+                    // Adding contact to list
+                    movieList.add(movieObject);
+                } while (cursor.moveToNext());
+            }
+        }
+        catch (SQLiteException e)
+        {
+            Log.d("SQL Error", e.getMessage());
+            return null;
+        }
+        finally
+        {
+            //release all your resources
+            cursor.close();
+            db.close();
+        }
+
+        mAdapter.clear();
+        //add found movies to the gridview
+        if (movieList != null && !movieList.isEmpty()) {
+            mMovieObjectList = new ArrayList<>();
+            mMovieObjectList.addAll(movieList);
+            mAdapter.addAll(movieList);
+            mGridView.setVisibility(View.VISIBLE);
+        } else {
+            //if none found, display no movies found text
+            mEmptyTextView.setText(R.string.noMovies);
+            mGridView.setVisibility(GONE);
+        }
+       // mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
+        mGridView.setAdapter(mAdapter);
+        return movieList;
     }
 }
