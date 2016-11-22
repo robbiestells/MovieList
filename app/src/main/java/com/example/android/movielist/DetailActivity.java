@@ -64,12 +64,15 @@ public class DetailActivity extends AppCompatActivity {
     private static String BASE_URL = "https://api.themoviedb.org/3/movie/";
 
     private static String API = "/videos?api_key=7c14a6a8397181fb121e60bbdf0cd991";
+    private static String REVIEW_API = "/reviews?api_key=7c14a6a8397181fb121e60bbdf0cd991";
 
     private static final int LOAD_FAVORITE = 0;
 
     private Uri mCurrentMovieUri;
 
     private TrailerAdapter mAdapter;
+    private ReviewAdapter mReviewAdapter;
+
     private FavoritesDbHelper mHelper;
 
     private String movieId;
@@ -82,7 +85,10 @@ public class DetailActivity extends AppCompatActivity {
     private Button mFavoriteButton;
 
     private ArrayList<TrailerObject> mTrailers;
+    private ArrayList<ReviewObject> mReviews;
+
     private ListView mTrailerLV;
+    private ListView mReviewLV;
 
     MovieObject selectedMovie;
 
@@ -99,6 +105,7 @@ public class DetailActivity extends AppCompatActivity {
         mMovieVoteTV = (TextView) findViewById(R.id.movieDetailsVote);
         mMoviePosterIV = (ImageView) findViewById(R.id.movieDetailsPoster);
         mTrailerLV = (ListView) findViewById(R.id.trailerListView);
+        mReviewLV = (ListView) findViewById(R.id.reviewListView);
         mFavoriteButton = (Button) findViewById(R.id.favoriteButton);
 
         //get intent from MainActivity
@@ -212,6 +219,7 @@ public class DetailActivity extends AppCompatActivity {
 
             //build the string for the URL request with base, sort choice, and api
             String REQUEST_URL = BASE_URL + movieId + API;
+            String REVIEW_URL = BASE_URL + movieId + REVIEW_API;
 
             //start Async task
             DetailsAsyncTask task = new DetailsAsyncTask();
@@ -220,6 +228,14 @@ public class DetailActivity extends AppCompatActivity {
             //set response to adapter
             mAdapter = new TrailerAdapter(this, new ArrayList<TrailerObject>());
             mTrailerLV.setAdapter(mAdapter);
+
+            //start Async task for Reviews
+            ReviewsAsyncTask reviewTask = new ReviewsAsyncTask();
+            reviewTask.execute(REVIEW_URL);
+
+            //set up reviews in adapter
+            mReviewAdapter = new ReviewAdapter(this, new ArrayList<ReviewObject>());
+            mReviewLV.setAdapter(mReviewAdapter);
 
         } else {
             //if no internet connection, display message
@@ -376,5 +392,84 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
         return output.toString();
+    }
+
+    private class ReviewsAsyncTask extends AsyncTask<String, Void, List<ReviewObject>> {
+
+        @Override
+        protected List<ReviewObject> doInBackground(String... urls) {
+            //Create Url object
+            if (urls.length < 1 || urls[0] == null) {
+                return null;
+            }
+
+            //get movie list with url
+            List<ReviewObject> result = fetchReviews(urls[0]);
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(List<ReviewObject> reviews) {
+//            mAdapter.clear();
+
+            //TODO update this with reviews
+            if (reviews != null && !reviews.isEmpty()) {
+                mReviews = new ArrayList<>();
+                mReviews.addAll(reviews);
+                mReviewAdapter.addAll(reviews);
+                mReviewLV.setVisibility(View.VISIBLE);
+
+            } else {
+                //if none found, display no movies found text
+//                mEmptyTextView.setText(R.string.noMovies);
+                mTrailerLV.setVisibility(GONE);
+            }
+        }
+    }
+
+    public static List<ReviewObject> fetchReviews(String requestUrl) {
+        URL url = createUrl(requestUrl);
+        String jsonResponse = null;
+        try {
+            jsonResponse = makeHttpRequest(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
+        List<ReviewObject> reviews = extractReviewsFromJson(jsonResponse);
+        return reviews;
+    }
+
+    //get the movie objects from the json
+    public static List<ReviewObject> extractReviewsFromJson(String reviewJson) {
+        if (TextUtils.isEmpty(reviewJson)) {
+            return null;
+        }
+
+        List<ReviewObject> reviews = new ArrayList<>();
+
+        try {
+            JSONObject baseJsonResponse = new JSONObject(reviewJson);
+
+            JSONArray resultArray = baseJsonResponse.getJSONArray("results");
+
+            // TODO extract reviews
+            for (int i = 0; i < resultArray.length(); i++) {
+                JSONObject currentReview = resultArray.getJSONObject(i);
+
+                // Extract out data
+                String reviewId = currentReview.getString("id");
+                String author = currentReview.getString("author");
+                String content = currentReview.getString("content");
+                String url = currentReview.getString("url");
+
+                // Create a Trailer object
+                ReviewObject reviewObject = new ReviewObject(reviewId, author, content, url);
+                reviews.add(reviewObject);
+            }
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Problem parsing the earthquake JSON results", e);
+        }
+        //return trailer list
+        return reviews;
     }
 }
