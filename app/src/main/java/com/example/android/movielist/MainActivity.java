@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -32,6 +33,7 @@ import com.example.android.movielist.data.FavoritesContract;
 import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
 import com.example.android.movielist.data.FavoritesCursorAdapter;
 import com.example.android.movielist.data.FavoritesDbHelper;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -342,12 +344,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //try creating a list of all favorite movies
-    public ArrayList<MovieObject> getFavoriteMovies(){
-        // Select All Query
-        String selectQuery = "SELECT * FROM SOME_TABLE";
+    public void getFavoriteMovies(){
         // Get the isntance of the database
         mHelper = new FavoritesDbHelper(this);
-        SQLiteDatabase db = mHelper.getWritableDatabase();
+        SQLiteDatabase db = mHelper.getReadableDatabase();
         //get the cursor you're going to use
 
         String[] projection = {
@@ -361,6 +361,8 @@ public class MainActivity extends AppCompatActivity {
         };
 
         Cursor cursor = db.query(FavoriteEntry.TABLE_NAME, projection, null, null, null, null, null);
+
+        ImageView posterIV = (ImageView) findViewById(R.id.posterImage);
 
         //this is optional - if you want to return one object
         //you don't need a list
@@ -399,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
         catch (SQLiteException e)
         {
             Log.d("SQL Error", e.getMessage());
-            return null;
+            return;
         }
         finally
         {
@@ -411,9 +413,11 @@ public class MainActivity extends AppCompatActivity {
         mAdapter.clear();
         //add found movies to the gridview
         if (movieList != null && !movieList.isEmpty()) {
-            mMovieObjectList = new ArrayList<>();
-            mMovieObjectList.addAll(movieList);
-            mAdapter.addAll(movieList);
+            mMovieObjectList = new ArrayList<MovieObject>();
+            mAdapter = new MovieAdapter(this, mMovieObjectList);
+        //    mMovieObjectList.addAll(movieList);
+           // mAdapter.addAll(movieList);
+            mGridView.setAdapter(mAdapter);
             mGridView.setVisibility(View.VISIBLE);
         } else {
             //if none found, display no movies found text
@@ -421,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
             mGridView.setVisibility(GONE);
         }
        // mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
-        mGridView.setAdapter(mAdapter);
-        return movieList;
+       // mGridView.setAdapter(mAdapter);
+        return;
     }
 }
