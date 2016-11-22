@@ -138,13 +138,9 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this, DetailActivity.class);
 
-                if (sortBy.equals(getString(R.string.favorite))) {
-                    Uri currentProductUri = ContentUris.withAppendedId(FavoriteEntry.CONTENT_URI, id);
-                    intent.setData(currentProductUri);
-                } else {
-                    MovieObject selectedMovie = (MovieObject) adapterView.getItemAtPosition(i);
-                    intent.putExtra("selectedMovie", selectedMovie);
-                }
+                MovieObject selectedMovie = (MovieObject) adapterView.getItemAtPosition(i);
+                intent.putExtra("selectedMovie", selectedMovie);
+
                 startActivity(intent);
             }
         });
@@ -392,17 +388,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //add found movies to the gridview
-        mAdapter = new MovieAdapter(this,new ArrayList<MovieObject>());
+        mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
         mGridView.setAdapter(mAdapter);
         mAdapter.clear();
 
         //List<MovieObject> movies
-        if(movieList!=null&&!movieList.isEmpty()){
+        if (movieList != null && !movieList.isEmpty()) {
             mMovieObjectList = new ArrayList<>();
             mMovieObjectList.addAll(movieList);
             mAdapter.addAll(movieList);
             mGridView.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             //ifnonefound,displaynomoviesfoundtext
             mEmptyTextView.setText(R.string.noMovies);
             mGridView.setVisibility(GONE);

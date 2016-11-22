@@ -7,6 +7,8 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -19,6 +21,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,6 +29,7 @@ import android.widget.Toast;
 
 import com.example.android.movielist.data.FavoritesContract;
 import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
+import com.example.android.movielist.data.FavoritesDbHelper;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -43,14 +47,17 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.R.attr.id;
+import static android.R.attr.name;
 import static android.R.attr.rating;
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 import static android.view.View.GONE;
 
 /**
  * Created by Rob on 11/9/2016.
  */
 
-public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DetailActivity extends AppCompatActivity {
     private static final String LOG_TAG = DetailActivity.class.getSimpleName();
 
     private static String BASE_URL = "https://api.themoviedb.org/3/movie/";
@@ -62,6 +69,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     private Uri mCurrentMovieUri;
 
     private TrailerAdapter mAdapter;
+    private FavoritesDbHelper mHelper;
 
     private String movieId;
 
@@ -70,6 +78,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     private TextView mMovieVoteTV;
     private TextView mMovieDateTV;
     private ImageView mMoviePosterIV;
+    private Button mFavoriteButton;
 
     private ArrayList<TrailerObject> mTrailers;
     private ListView mTrailerLV;
@@ -89,27 +98,27 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         mMovieVoteTV = (TextView) findViewById(R.id.movieDetailsVote);
         mMoviePosterIV = (ImageView) findViewById(R.id.movieDetailsPoster);
         mTrailerLV = (ListView) findViewById(R.id.trailerListView);
+        mFavoriteButton = (Button) findViewById(R.id.favoriteButton);
 
         //get intent from MainActivity
         Intent intent = getIntent();
         mCurrentMovieUri = intent.getData();
 
-        if (mCurrentMovieUri != null) {
-            getLoaderManager().initLoader(LOAD_FAVORITE, null, this);
 
-        } else {
-            //get selected movie
-            selectedMovie = (MovieObject) intent.getParcelableExtra("selectedMovie");
+        //get selected movie
+        selectedMovie = (MovieObject) intent.getParcelableExtra("selectedMovie");
 
-            //assign movie data to views
-            mMovieTitleTV.setText(selectedMovie.getMovieTitle());
-            mMovieDateTV.setText(selectedMovie.getReleaseDate());
-            mMoviePlotTV.setText(selectedMovie.getPlotSyn());
-            mMovieVoteTV.setText(selectedMovie.getVoteAvg());
-            Picasso.with(this).load(selectedMovie.getPosterUrl()).into(mMoviePosterIV);
+        //assign movie data to views
+        mMovieTitleTV.setText(selectedMovie.getMovieTitle());
+        mMovieDateTV.setText(selectedMovie.getReleaseDate());
+        mMoviePlotTV.setText(selectedMovie.getPlotSyn());
+        mMovieVoteTV.setText(selectedMovie.getVoteAvg());
+        Picasso.with(this).load(selectedMovie.getPosterUrl()).into(mMoviePosterIV);
 
-            movieId = selectedMovie.getMovieId();
-        }
+        movieId = selectedMovie.getMovieId();
+
+        //check favorites
+        checkFavorites();
 
         mTrailerLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -122,6 +131,51 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         });
 
         CheckConnection();
+    }
+
+    //try creating a list of all favorite movies
+    public void checkFavorites() {
+        // Get the isntance of the database
+        mHelper = new FavoritesDbHelper(this);
+        SQLiteDatabase db = mHelper.getReadableDatabase();
+        //get the cursor you're going to use
+
+        String[] projection = {
+                FavoriteEntry._ID,
+                FavoriteEntry.COLUMN_MOVIE_ID,
+                FavoriteEntry.COLUMN_MOVIE_PLOT,
+                FavoriteEntry.COLUMN_MOVIE_POSTER,
+                FavoriteEntry.COLUMN_MOVIE_RATING,
+                FavoriteEntry.COLUMN_MOVIE_RELEASED,
+                FavoriteEntry.COLUMN_MOVIE_TITLE
+        };
+
+        Cursor cursor = db.query(FavoriteEntry.TABLE_NAME, projection, null, null, null, null, null);
+        List<String> favorites = new ArrayList<>();
+        try {
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    int idColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_ID);
+                    String id = cursor.getString(idColumnIndex);
+
+                    favorites.add(id);
+                    if (id.equals(selectedMovie.getMovieId())){
+                        //TODO change to unFavoriteButton
+                        mFavoriteButton.setVisibility(View.INVISIBLE);
+                    }
+                } while (cursor.moveToNext());
+            }
+        } catch (SQLiteException e) {
+            Log.d("SQL Error", e.getMessage());
+            return;
+        } finally {
+            //release all your resources
+            cursor.close();
+            db.close();
+        }
+            return;
+
     }
 
     public void FavoriteMovie_Clicked(View view) {
@@ -143,11 +197,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         ContentValues values = new ContentValues();
         values.put(FavoriteEntry.COLUMN_MOVIE_ID, movieId);
         values.put(FavoriteEntry.COLUMN_MOVIE_TITLE, movieTitle);
-        if (null != moviePoster && moviePoster.length() > 0 )
-        {
+        if (null != moviePoster && moviePoster.length() > 0) {
             int endIndex = moviePoster.lastIndexOf("/");
-            if (endIndex != -1)
-            {
+            if (endIndex != -1) {
                 String posterSuburl = moviePoster.substring(endIndex);
                 values.put(FavoriteEntry.COLUMN_MOVIE_POSTER, posterSuburl);
             }
@@ -159,9 +211,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         //if new product, insert values to new row and show Toast, otherwise, update product row
         Uri newUri = getContentResolver().insert(FavoriteEntry.CONTENT_URI, values);
         if (newUri == null) {
-            Toast.makeText(this, "insert failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Added movie to favorites list", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, "insert successful", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error adding movie to favorites list", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -190,105 +242,41 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         }
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] projection = {
-                FavoriteEntry._ID,
-                FavoriteEntry.COLUMN_MOVIE_ID,
-                FavoriteEntry.COLUMN_MOVIE_PLOT,
-                FavoriteEntry.COLUMN_MOVIE_POSTER,
-                FavoriteEntry.COLUMN_MOVIE_RATING,
-                FavoriteEntry.COLUMN_MOVIE_RELEASED,
-                FavoriteEntry.COLUMN_MOVIE_TITLE
-        };
-        return new CursorLoader(
-                this,
-                mCurrentMovieUri,
-                projection,
-                null,
-                null,
-                null
-        );
-    }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (data == null || data.getCount() < 1) {
-            return;
-        }
-        updateViews(data);
-    }
-
-    private void updateViews(Cursor data) {
-        //if the cursor is not null, load data into views
-        if (data.moveToFirst()) {
-            int nameColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_TITLE);
-            int plotColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_PLOT);
-            int posterColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_POSTER);
-            int ratingColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_RATING);
-            int releaseColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_RELEASED);
-            int idColumnIndex = data.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_ID);
-
-            String name = data.getString(nameColumnIndex);
-            String plot = data.getString(plotColumnIndex);
-            String poster = data.getString(posterColumnIndex);
-            String rating = data.getString(ratingColumnIndex);
-            String release = data.getString(releaseColumnIndex);
-            String id = data.getString(idColumnIndex);
-
-            mMovieTitleTV.setText(name);
-            mMoviePlotTV.setText(plot);
-            mMovieVoteTV.setText(rating);
-            mMovieDateTV.setText(release);
-            movieId = id;
-            Picasso.with(this).load(poster).into(mMoviePosterIV);
-        }
-    }
+    private class DetailsAsyncTask extends AsyncTask<String, Void, List<TrailerObject>> {
 
         @Override
-        public void onLoaderReset (Loader<Cursor> loader) {
-            //on reset, clear all fields
-            mMovieTitleTV.setText("");
-            mMoviePlotTV.setText("");
-            mMovieVoteTV.setText("");
-            mMovieDateTV.setText("");
-            movieId = "";
-        }
-
-        private class DetailsAsyncTask extends AsyncTask<String, Void, List<TrailerObject>> {
-
-            @Override
-            protected List<TrailerObject> doInBackground(String... urls) {
-                //Create Url object
-                if (urls.length < 1 || urls[0] == null) {
-                    return null;
-                }
-
-                //get movie list with url
-                List<TrailerObject> result = fetchTrailers(urls[0]);
-                return result;
+        protected List<TrailerObject> doInBackground(String... urls) {
+            //Create Url object
+            if (urls.length < 1 || urls[0] == null) {
+                return null;
             }
 
-            @Override
-            protected void onPostExecute(List<TrailerObject> trailers) {
+            //get movie list with url
+            List<TrailerObject> result = fetchTrailers(urls[0]);
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(List<TrailerObject> trailers) {
 //            mAdapter.clear();
 
-                //add found movies to the gridview
-                if (trailers != null && !trailers.isEmpty()) {
-                    mTrailers = new ArrayList<>();
-                    mTrailers.addAll(trailers);
-                    mAdapter.addAll(trailers);
-                    mTrailerLV.setVisibility(View.VISIBLE);
+            //add found movies to the gridview
+            if (trailers != null && !trailers.isEmpty()) {
+                mTrailers = new ArrayList<>();
+                mTrailers.addAll(trailers);
+                mAdapter.addAll(trailers);
+                mTrailerLV.setVisibility(View.VISIBLE);
 
-                } else {
-                    //if none found, display no movies found text
+            } else {
+                //if none found, display no movies found text
 //                mEmptyTextView.setText(R.string.noMovies);
-                    mTrailerLV.setVisibility(GONE);
-                }
+                mTrailerLV.setVisibility(GONE);
             }
         }
+    }
 
-        //create URL out of string
+    //create URL out of string
 
     private static URL createUrl(String stringUrl) {
         URL url = null;
