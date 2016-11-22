@@ -52,6 +52,7 @@ import static android.R.attr.name;
 import static android.R.attr.rating;
 import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 import static android.view.View.GONE;
+import static com.example.android.movielist.data.FavoritesContract.FavoriteEntry.COLUMN_MOVIE_TITLE;
 
 /**
  * Created by Rob on 11/9/2016.
@@ -135,37 +136,23 @@ public class DetailActivity extends AppCompatActivity {
 
     //try creating a list of all favorite movies
     public void checkFavorites() {
-        // Get the isntance of the database
+        // Get the instance of the database
         mHelper = new FavoritesDbHelper(this);
         SQLiteDatabase db = mHelper.getReadableDatabase();
-        //get the cursor you're going to use
 
-        String[] projection = {
-                FavoriteEntry._ID,
-                FavoriteEntry.COLUMN_MOVIE_ID,
-                FavoriteEntry.COLUMN_MOVIE_PLOT,
-                FavoriteEntry.COLUMN_MOVIE_POSTER,
-                FavoriteEntry.COLUMN_MOVIE_RATING,
-                FavoriteEntry.COLUMN_MOVIE_RELEASED,
-                FavoriteEntry.COLUMN_MOVIE_TITLE
-        };
+        //Look in database Move Id column for the selected movie's id
+        String[] projection = {FavoriteEntry.COLUMN_MOVIE_ID};
+        String selection = FavoriteEntry.COLUMN_MOVIE_ID + "=?";
+        String[] selectionArgs = {selectedMovie.getMovieId()};
 
-        Cursor cursor = db.query(FavoriteEntry.TABLE_NAME, projection, null, null, null, null, null);
-        List<String> favorites = new ArrayList<>();
+        Cursor cursor = db.query(FavoriteEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
+
         try {
-            // looping through all rows and adding to list
+            // See if cursor returns an object, if so, turn off favorite button
             if (cursor.moveToFirst()) {
-                do {
-                    int idColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_ID);
-                    String id = cursor.getString(idColumnIndex);
-
-                    favorites.add(id);
-                    if (id.equals(selectedMovie.getMovieId())){
-                        //TODO change to unFavoriteButton
-                        mFavoriteButton.setVisibility(View.INVISIBLE);
-                    }
-                } while (cursor.moveToNext());
+                mFavoriteButton.setVisibility(View.INVISIBLE);
             }
+
         } catch (SQLiteException e) {
             Log.d("SQL Error", e.getMessage());
             return;
@@ -174,8 +161,7 @@ public class DetailActivity extends AppCompatActivity {
             cursor.close();
             db.close();
         }
-            return;
-
+        return;
     }
 
     public void FavoriteMovie_Clicked(View view) {
@@ -196,7 +182,7 @@ public class DetailActivity extends AppCompatActivity {
         //put all values into ContentValues
         ContentValues values = new ContentValues();
         values.put(FavoriteEntry.COLUMN_MOVIE_ID, movieId);
-        values.put(FavoriteEntry.COLUMN_MOVIE_TITLE, movieTitle);
+        values.put(COLUMN_MOVIE_TITLE, movieTitle);
         if (null != moviePoster && moviePoster.length() > 0) {
             int endIndex = moviePoster.lastIndexOf("/");
             if (endIndex != -1) {
