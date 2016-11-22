@@ -143,7 +143,15 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         ContentValues values = new ContentValues();
         values.put(FavoriteEntry.COLUMN_MOVIE_ID, movieId);
         values.put(FavoriteEntry.COLUMN_MOVIE_TITLE, movieTitle);
-        values.put(FavoriteEntry.COLUMN_MOVIE_POSTER, moviePoster);
+        if (null != moviePoster && moviePoster.length() > 0 )
+        {
+            int endIndex = moviePoster.lastIndexOf("/");
+            if (endIndex != -1)
+            {
+                String posterSuburl = moviePoster.substring(endIndex);
+                values.put(FavoriteEntry.COLUMN_MOVIE_POSTER, posterSuburl);
+            }
+        }
         values.put(FavoriteEntry.COLUMN_MOVIE_RELEASED, movieRelease);
         values.put(FavoriteEntry.COLUMN_MOVIE_RATING, movieVote);
         values.put(FavoriteEntry.COLUMN_MOVIE_PLOT, moviePlot);

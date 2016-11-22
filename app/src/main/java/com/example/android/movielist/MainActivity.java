@@ -101,20 +101,6 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_favorite) {
             mAdapter.clear();
             sortBy = getString(R.string.favorite);
-            //mMovieObjectList = getFavoriteMovies();
-
-            //add found movies to the gridview
-//            if (mMovieObjectList != null && !mMovieObjectList.isEmpty()) {
-////                mMovieObjectList = new ArrayList<>();
-////                mMovieObjectList.addAll(movies);
-//                mAdapter.addAll(mMovieObjectList);
-//                mGridView.setVisibility(View.VISIBLE);
-//            } else {
-//                //if none found, display no movies found text
-//                mEmptyTextView.setText(R.string.noMovies);
-//                mGridView.setVisibility(GONE);
-//            }
-
             getFavoriteMovies();
         }
         return super.onOptionsItemSelected(item);
@@ -152,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this, DetailActivity.class);
 
-                if (sortBy.equals(getString(R.string.favorite))){
+                if (sortBy.equals(getString(R.string.favorite))) {
                     Uri currentProductUri = ContentUris.withAppendedId(FavoriteEntry.CONTENT_URI, id);
                     intent.setData(currentProductUri);
                 } else {
@@ -344,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //try creating a list of all favorite movies
-    public void getFavoriteMovies(){
+    public void getFavoriteMovies() {
         // Get the isntance of the database
         mHelper = new FavoritesDbHelper(this);
         SQLiteDatabase db = mHelper.getReadableDatabase();
@@ -366,12 +352,11 @@ public class MainActivity extends AppCompatActivity {
 
         //this is optional - if you want to return one object
         //you don't need a list
-        ArrayList<MovieObject> movieList = new ArrayList<MovieObject>();
+        List<MovieObject> movieList = new ArrayList<MovieObject>();
 
         //you should always use the try catch statement incase
         //something goes wrong when trying to read the data
-        try
-        {
+        try {
             // looping through all rows and adding to list
             if (cursor.moveToFirst()) {
                 do {
@@ -397,35 +382,32 @@ public class MainActivity extends AppCompatActivity {
                     movieList.add(movieObject);
                 } while (cursor.moveToNext());
             }
-        }
-        catch (SQLiteException e)
-        {
+        } catch (SQLiteException e) {
             Log.d("SQL Error", e.getMessage());
             return;
-        }
-        finally
-        {
+        } finally {
             //release all your resources
             cursor.close();
             db.close();
         }
 
-        mAdapter.clear();
         //add found movies to the gridview
-        if (movieList != null && !movieList.isEmpty()) {
-            mMovieObjectList = new ArrayList<MovieObject>();
-            mAdapter = new MovieAdapter(this, mMovieObjectList);
-        //    mMovieObjectList.addAll(movieList);
-           // mAdapter.addAll(movieList);
-            mGridView.setAdapter(mAdapter);
+        mAdapter = new MovieAdapter(this,new ArrayList<MovieObject>());
+        mGridView.setAdapter(mAdapter);
+        mAdapter.clear();
+
+        //List<MovieObject> movies
+        if(movieList!=null&&!movieList.isEmpty()){
+            mMovieObjectList = new ArrayList<>();
+            mMovieObjectList.addAll(movieList);
+            mAdapter.addAll(movieList);
             mGridView.setVisibility(View.VISIBLE);
-        } else {
-            //if none found, display no movies found text
+        }else{
+            //ifnonefound,displaynomoviesfoundtext
             mEmptyTextView.setText(R.string.noMovies);
             mGridView.setVisibility(GONE);
         }
-       // mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
-       // mGridView.setAdapter(mAdapter);
+
         return;
     }
 }
