@@ -1,8 +1,12 @@
 package com.example.android.movielist;
 
 import android.app.Activity;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.Loader;
+import android.support.v4.content.CursorLoader;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Movie;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -19,6 +23,10 @@ import android.widget.GridView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.android.movielist.data.FavoritesContract;
+import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
+import com.example.android.movielist.data.FavoritesCursorAdapter;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,9 +42,10 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.R.attr.id;
 import static android.view.View.GONE;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -46,7 +55,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static String API = "?api_key=7c14a6a8397181fb121e60bbdf0cd991";
 
+    private static final int URL_LOADER = 0;
+
     private MovieAdapter mAdapter;
+
+    private FavoritesCursorAdapter mFavoriteAdapter;
 
     private TextView mEmptyTextView;
 
@@ -73,8 +86,20 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_top) {
             sortBy = getString(R.string.top_rated);
             CheckConnection();
+        } else if (id == R.id.action_favorite) {
+            sortBy = getString(R.string.favorite);
+            getFavorites();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getFavorites() {
+        //set up adapter
+        mFavoriteAdapter = new FavoritesCursorAdapter(this, null);
+        mGridView.setAdapter(mFavoriteAdapter);
+
+        //kick off loader
+        getSupportLoaderManager().initLoader(URL_LOADER, null, this);
     }
 
     @Override
@@ -147,6 +172,37 @@ public class MainActivity extends AppCompatActivity {
             mGridView.setVisibility(GONE);
             mEmptyTextView.setText(R.string.noConn);
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                FavoriteEntry._ID,
+                FavoriteEntry.COLUMN_MOVIE_ID,
+                FavoriteEntry.COLUMN_MOVIE_PLOT,
+                FavoriteEntry.COLUMN_MOVIE_POSTER,
+                FavoriteEntry.COLUMN_MOVIE_RATING,
+                FavoriteEntry.COLUMN_MOVIE_RELEASED,
+                FavoriteEntry.COLUMN_MOVIE_TITLE
+        };
+        return new CursorLoader(
+                this,
+                FavoriteEntry.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mFavoriteAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mFavoriteAdapter.swapCursor(null);
     }
 
     private class MovieAsyncTask extends AsyncTask<String, Void, List<MovieObject>> {

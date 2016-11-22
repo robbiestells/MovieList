@@ -36,7 +36,7 @@ public class FavoritesCursorAdapter extends CursorAdapter {
         final int itemId = cursor.getInt(cursor.getColumnIndex(FavoriteEntry._ID));
 
         //find views
-        final ImageView ivMuscle = (ImageView) view.findViewById(R.id.posterImage);
+        final ImageView ivPoster = (ImageView) view.findViewById(R.id.posterImage);
 
         //find columns in table
         int imageColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_POSTER);
@@ -45,7 +45,7 @@ public class FavoritesCursorAdapter extends CursorAdapter {
         String image = cursor.getString(imageColumnIndex);
 
         //assign data to views
-        Picasso.with(context).load(image).into(ivMuscle);
+        Picasso.with(context).load(image).into(ivPoster);
 
     }
 }
