@@ -29,43 +29,36 @@
             <TextView
                 android:id="@+id/movieDetailsTitle"
                 android:layout_width="0dp"
-                android:layout_weight="4"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
+                android:layout_weight="4"
                 android:textColor="@android:color/holo_red_light"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/favoriteButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Favorite"
-                android:layout_gravity="center"
-                android:layout_weight="1"
-                android:onClick="FavoriteMovie_Clicked"/>
+
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/released"
-                    android:textColor="@android:color/white" />
+                <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginBottom="8dp"-->
+                <!--android:layout_marginLeft="16dp"-->
+                <!--android:layout_marginTop="16dp"-->
+                <!--android:text="@string/released"-->
+                <!--android:textColor="@android:color/white" />-->
 
                 <TextView
                     android:id="@+id/movieDetailsDate"
@@ -79,18 +72,18 @@
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/Score"
-                    android:textColor="@android:color/white" />
+                <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginBottom="8dp"-->
+                <!--android:layout_marginLeft="16dp"-->
+                <!--android:layout_marginTop="16dp"-->
+                <!--android:text="@string/Score"-->
+                <!--android:textColor="@android:color/white" />-->
 
                 <TextView
                     android:id="@+id/movieDetailsVote"
@@ -111,6 +104,49 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:textColor="@android:color/white" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/holo_red_dark"
+                android:padding="1dp"
+                android:id="@+id/favoriteLayout">
+
+                <Button
+                    android:id="@+id/favoriteButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@android:color/black"
+                    android:onClick="FavoriteMovie_Clicked"
+                    android:text="Favorite"
+                    android:textColor="@android:color/holo_red_dark" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/black"
+                android:padding="1dp"
+                android:id="@+id/unfavoriteLayout"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/unfavoriteButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@android:color/holo_red_dark"
+                    android:onClick="UnfavoriteMovie_Clicked"
+                    android:text="Unfavorite"
+                    android:textColor="@android:color/black" />
+            </LinearLayout>
+        </RelativeLayout>
+
 
         <ListView
             android:id="@+id/trailerListView"

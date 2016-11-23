@@ -1,6 +1,7 @@
 package com.example.android.movielist;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -23,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,6 +85,9 @@ public class DetailActivity extends AppCompatActivity {
     private TextView mMovieDateTV;
     private ImageView mMoviePosterIV;
     private Button mFavoriteButton;
+    private Button mUnfavoriteButton;
+    private LinearLayout mFavoriteLayout;
+    private LinearLayout mUnfavoriteLayout;
 
     private ArrayList<TrailerObject> mTrailers;
     private ArrayList<ReviewObject> mReviews;
@@ -91,6 +96,7 @@ public class DetailActivity extends AppCompatActivity {
     private ListView mReviewLV;
 
     MovieObject selectedMovie;
+    String favoriteId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -107,6 +113,9 @@ public class DetailActivity extends AppCompatActivity {
         mTrailerLV = (ListView) findViewById(R.id.trailerListView);
         mReviewLV = (ListView) findViewById(R.id.reviewListView);
         mFavoriteButton = (Button) findViewById(R.id.favoriteButton);
+        mFavoriteLayout = (LinearLayout) findViewById(R.id.favoriteLayout);
+        mUnfavoriteButton = (Button) findViewById(R.id.unfavoriteButton);
+        mUnfavoriteLayout = (LinearLayout) findViewById(R.id.unfavoriteLayout);
 
         //get intent from MainActivity
         Intent intent = getIntent();
@@ -148,7 +157,7 @@ public class DetailActivity extends AppCompatActivity {
         SQLiteDatabase db = mHelper.getReadableDatabase();
 
         //Look in database Move Id column for the selected movie's id
-        String[] projection = {FavoriteEntry.COLUMN_MOVIE_ID};
+        String[] projection = {FavoriteEntry._ID, FavoriteEntry.COLUMN_MOVIE_ID};
         String selection = FavoriteEntry.COLUMN_MOVIE_ID + "=?";
         String[] selectionArgs = {selectedMovie.getMovieId()};
 
@@ -157,7 +166,10 @@ public class DetailActivity extends AppCompatActivity {
         try {
             // See if cursor returns an object, if so, turn off favorite button
             if (cursor.moveToFirst()) {
-                mFavoriteButton.setVisibility(View.INVISIBLE);
+                mFavoriteLayout.setVisibility(View.GONE);
+                mUnfavoriteLayout.setVisibility(View.VISIBLE);
+                int idColumn = cursor.getColumnIndex(FavoriteEntry._ID);
+                favoriteId = cursor.getString(idColumn);
             }
 
         } catch (SQLiteException e) {
@@ -203,13 +215,30 @@ public class DetailActivity extends AppCompatActivity {
 
         //if new product, insert values to new row and show Toast, otherwise, update product row
         Uri newUri = getContentResolver().insert(FavoriteEntry.CONTENT_URI, values);
-        if (newUri == null) {
-            Toast.makeText(this, "Added movie to favorites list", Toast.LENGTH_SHORT).show();
+        if (newUri != null) {
+            Toast.makeText(this, "Added to favorites", Toast.LENGTH_SHORT).show();
+            mFavoriteLayout.setVisibility(GONE);
+            mUnfavoriteLayout.setVisibility(View.VISIBLE);
         } else {
-            Toast.makeText(this, "Error adding movie to favorites list", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error adding to favorites", Toast.LENGTH_SHORT).show();
         }
     }
 
+    public void UnfavoriteMovie_Clicked(View view) {
+        mHelper = new FavoritesDbHelper(this);
+        SQLiteDatabase db = mHelper.getReadableDatabase();
+
+        //Look in database Move Id column for the selected movie's id
+        String whereClause = FavoriteEntry.COLUMN_MOVIE_ID + "=?";
+        String[] whereArgs = {selectedMovie.getMovieId()};
+
+        db.delete(FavoriteEntry.TABLE_NAME, whereClause, whereArgs);
+
+        mUnfavoriteLayout.setVisibility(View.GONE);
+        mFavoriteLayout.setVisibility(View.VISIBLE);
+
+        Toast.makeText(this, "Removed from favorites", Toast.LENGTH_SHORT).show();
+    }
 
     //check to see if there's internet connection
     public void CheckConnection() {
