@@ -5,9 +5,9 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/trailerNumberTV"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center_vertical"
-        android:id="@+id/trailerNumberTV"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white" />
 </LinearLayout>

@@ -16,7 +16,7 @@ import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
  * Created by rsteller on 11/21/2016.
  */
 
-public class FavoritesProvider extends ContentProvider{
+public class FavoritesProvider extends ContentProvider {
     public static final String LOG_TAG = FavoritesProvider.class.getSimpleName();
 
     private FavoritesDbHelper mHelper;
@@ -44,7 +44,7 @@ public class FavoritesProvider extends ContentProvider{
 
         Cursor cursor;
 
-        //determine whether a specific product is being queried
+        //determine whether a specific movie is being queried
         int match = sUriMatcher.match(uri);
         switch (match) {
             case FAVORITE:
@@ -58,6 +58,7 @@ public class FavoritesProvider extends ContentProvider{
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
+
         //set notification URI on the cursor
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
@@ -94,7 +95,7 @@ public class FavoritesProvider extends ContentProvider{
         //Check that movie id is not null
         String name = values.getAsString(FavoriteEntry.COLUMN_MOVIE_ID);
         if (name == null) {
-            throw new IllegalArgumentException("Product requires a name");
+            throw new IllegalArgumentException("Invalid Movie Id");
         }
 
         SQLiteDatabase database = mHelper.getWritableDatabase();
@@ -114,14 +115,11 @@ public class FavoritesProvider extends ContentProvider{
 
     @Override
     public int delete(Uri uri, String s, String[] strings) {
-        //need to implement deleting favorite
-
         return 0;
     }
 
     @Override
     public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
-        //or have it update the row
         return 0;
     }
 }

@@ -11,11 +11,12 @@ import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
  */
 
 public class FavoritesDbHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 3;
+    //curent version
+    private static final int DATABASE_VERSION = 1;
 
     private static final String DATABASE_NAME = "favorite.db";
 
-    public FavoritesDbHelper(Context context){
+    public FavoritesDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

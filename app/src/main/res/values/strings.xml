@@ -11,4 +11,7 @@
     <string name="released">Released:</string>
     <string name="Score">Score:</string>
     <string name="favorite">Favorites</string>
+    <string name="addFavorite">Favorite</string>
+    <string name="removeFavorite">Unfavorite</string>
+    <string name="noFavorites">Add favorite movies to display them here</string>
 </resources>

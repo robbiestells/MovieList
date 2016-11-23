@@ -31,7 +31,7 @@ public class MovieAdapter extends ArrayAdapter<MovieObject> {
 
         //Check if the existing view is being reused, otherwise inflate the view
         View gridItemView = convertView;
-        if (gridItemView == null){
+        if (gridItemView == null) {
             gridItemView = LayoutInflater.from(getContext()).inflate(R.layout.gridview_item, parent, false);
         }
 

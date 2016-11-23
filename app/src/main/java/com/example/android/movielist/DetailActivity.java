@@ -52,6 +52,8 @@ import java.util.List;
 import static android.R.attr.id;
 import static android.R.attr.name;
 import static android.R.attr.rating;
+import static android.R.id.message;
+import static android.R.string.no;
 import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 import static android.view.View.GONE;
 import static com.example.android.movielist.data.FavoritesContract.FavoriteEntry.COLUMN_MOVIE_TITLE;
@@ -68,7 +70,7 @@ public class DetailActivity extends AppCompatActivity {
     private static String API = "/videos?api_key=7c14a6a8397181fb121e60bbdf0cd991";
     private static String REVIEW_API = "/reviews?api_key=7c14a6a8397181fb121e60bbdf0cd991";
 
-    private static final int LOAD_FAVORITE = 0;
+    //private static final int LOAD_FAVORITE = 0;
 
     private Uri mCurrentMovieUri;
 
@@ -105,6 +107,7 @@ public class DetailActivity extends AppCompatActivity {
 
         mAdapter = new TrailerAdapter(this, new ArrayList<TrailerObject>());
 
+        //find all views
         mMovieTitleTV = (TextView) findViewById(R.id.movieDetailsTitle);
         mMovieDateTV = (TextView) findViewById(R.id.movieDetailsDate);
         mMoviePlotTV = (TextView) findViewById(R.id.movieDetailsPlot);
@@ -137,6 +140,7 @@ public class DetailActivity extends AppCompatActivity {
         //check favorites
         checkFavorites();
 
+        //start intent to view selected trailer
         mTrailerLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -164,7 +168,7 @@ public class DetailActivity extends AppCompatActivity {
         Cursor cursor = db.query(FavoriteEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
 
         try {
-            // See if cursor returns an object, if so, turn off favorite button
+            // See if cursor returns an object, if so, get row id and turn off favorite button
             if (cursor.moveToFirst()) {
                 mFavoriteLayout.setVisibility(View.GONE);
                 mUnfavoriteLayout.setVisibility(View.VISIBLE);
@@ -184,12 +188,6 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     public void FavoriteMovie_Clicked(View view) {
-        //make sure all fields are filled out
-//        if (TextUtils.isEmpty(mNameEditText.getText())) {
-//            Toast.makeText(this, "Name Required", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-
         //get all data from fields
         String movieId = selectedMovie.getMovieId();
         String movieTitle = selectedMovie.getMovieTitle();
@@ -202,6 +200,9 @@ public class DetailActivity extends AppCompatActivity {
         ContentValues values = new ContentValues();
         values.put(FavoriteEntry.COLUMN_MOVIE_ID, movieId);
         values.put(COLUMN_MOVIE_TITLE, movieTitle);
+
+        //put end of poster string into database to not interfere
+        //with the getPoster method
         if (null != moviePoster && moviePoster.length() > 0) {
             int endIndex = moviePoster.lastIndexOf("/");
             if (endIndex != -1) {
@@ -213,7 +214,7 @@ public class DetailActivity extends AppCompatActivity {
         values.put(FavoriteEntry.COLUMN_MOVIE_RATING, movieVote);
         values.put(FavoriteEntry.COLUMN_MOVIE_PLOT, moviePlot);
 
-        //if new product, insert values to new row and show Toast, otherwise, update product row
+        //if new product, insert values to new row and show Toast
         Uri newUri = getContentResolver().insert(FavoriteEntry.CONTENT_URI, values);
         if (newUri != null) {
             Toast.makeText(this, "Added to favorites", Toast.LENGTH_SHORT).show();
@@ -224,6 +225,7 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    //delete favorite movie
     public void UnfavoriteMovie_Clicked(View view) {
         mHelper = new FavoritesDbHelper(this);
         SQLiteDatabase db = mHelper.getReadableDatabase();
@@ -232,8 +234,10 @@ public class DetailActivity extends AppCompatActivity {
         String whereClause = FavoriteEntry.COLUMN_MOVIE_ID + "=?";
         String[] whereArgs = {selectedMovie.getMovieId()};
 
+        //delete that row
         db.delete(FavoriteEntry.TABLE_NAME, whereClause, whereArgs);
 
+        //switch on Favorite button and hide Unfavorite button
         mUnfavoriteLayout.setVisibility(View.GONE);
         mFavoriteLayout.setVisibility(View.VISIBLE);
 
@@ -265,11 +269,6 @@ public class DetailActivity extends AppCompatActivity {
             //set up reviews in adapter
             mReviewAdapter = new ReviewAdapter(this, new ArrayList<ReviewObject>());
             mReviewLV.setAdapter(mReviewAdapter);
-
-        } else {
-            //if no internet connection, display message
-            // mGridView.setVisibility(GONE);
-            // mEmptyTextView.setText(R.string.noConn);
         }
     }
 
@@ -290,9 +289,7 @@ public class DetailActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<TrailerObject> trailers) {
-//            mAdapter.clear();
-
-            //add found movies to the gridview
+            //add found trailers to the gridview
             if (trailers != null && !trailers.isEmpty()) {
                 mTrailers = new ArrayList<>();
                 mTrailers.addAll(trailers);
@@ -300,15 +297,13 @@ public class DetailActivity extends AppCompatActivity {
                 mTrailerLV.setVisibility(View.VISIBLE);
 
             } else {
-                //if none found, display no movies found text
-//                mEmptyTextView.setText(R.string.noMovies);
+                //if none found, hide trailer listView
                 mTrailerLV.setVisibility(GONE);
             }
         }
     }
 
     //create URL out of string
-
     private static URL createUrl(String stringUrl) {
         URL url = null;
         try {
@@ -360,7 +355,9 @@ public class DetailActivity extends AppCompatActivity {
                 } else {
                     trailerUrl = null;
                 }
+                //add string for trailer number
                 String number = String.valueOf(i + 1);
+
                 // Create a Trailer object
                 TrailerObject trailerObject = new TrailerObject(number, trailerUrl);
                 trailers.add(trailerObject);
@@ -439,9 +436,8 @@ public class DetailActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<ReviewObject> reviews) {
-//            mAdapter.clear();
 
-            //TODO update this with reviews
+            //add reviews to reviewListView
             if (reviews != null && !reviews.isEmpty()) {
                 mReviews = new ArrayList<>();
                 mReviews.addAll(reviews);
@@ -449,8 +445,7 @@ public class DetailActivity extends AppCompatActivity {
                 mReviewLV.setVisibility(View.VISIBLE);
 
             } else {
-                //if none found, display no movies found text
-//                mEmptyTextView.setText(R.string.noMovies);
+                //if none found, hide trailer listview
                 mTrailerLV.setVisibility(GONE);
             }
         }
@@ -468,7 +463,7 @@ public class DetailActivity extends AppCompatActivity {
         return reviews;
     }
 
-    //get the movie objects from the json
+    //get the review objects from the json
     public static List<ReviewObject> extractReviewsFromJson(String reviewJson) {
         if (TextUtils.isEmpty(reviewJson)) {
             return null;
@@ -481,7 +476,6 @@ public class DetailActivity extends AppCompatActivity {
 
             JSONArray resultArray = baseJsonResponse.getJSONArray("results");
 
-            // TODO extract reviews
             for (int i = 0; i < resultArray.length(); i++) {
                 JSONObject currentReview = resultArray.getJSONObject(i);
 
@@ -491,7 +485,7 @@ public class DetailActivity extends AppCompatActivity {
                 String content = currentReview.getString("content");
                 String url = currentReview.getString("url");
 
-                // Create a Trailer object
+                // Create a Review object
                 ReviewObject reviewObject = new ReviewObject(reviewId, author, content, url);
                 reviews.add(reviewObject);
             }

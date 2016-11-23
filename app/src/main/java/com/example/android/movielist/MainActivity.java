@@ -65,11 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static String API = "?api_key=7c14a6a8397181fb121e60bbdf0cd991";
 
-    private static final int URL_LOADER = 0;
-
     private MovieAdapter mAdapter;
-
-    private FavoritesCursorAdapter mFavoriteAdapter;
 
     private TextView mEmptyTextView;
 
@@ -115,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
         sortBy = getString(R.string.popular);
 
         mEmptyTextView = (TextView) findViewById(R.id.empty_text_view);
-
         mGridView = (GridView) findViewById(R.id.movieGridView);
 
         mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
@@ -145,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //start process
+        //start process of loading movies
         CheckConnection();
     }
 
@@ -171,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
             task.execute(REQUEST_URL);
 
             //set response to adapter
-
             mAdapter = new MovieAdapter(this, new ArrayList<MovieObject>());
             mGridView.setAdapter(mAdapter);
         } else {
@@ -225,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
         return url;
     }
 
-    //get the json string from url
+    //get the json response from url
     public static List<MovieObject> fetchMovies(String requestUrl) {
         URL url = createUrl(requestUrl);
         String jsonResponse = null;
@@ -251,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
             JSONArray resultArray = baseJsonResponse.getJSONArray("results");
 
-            // For each movie in the array, create a Book object and add it to the ArrayList
+            // For each movie in the array, create a Movie object and add it to the ArrayList
             for (int i = 0; i < resultArray.length(); i++) {
                 JSONObject currentMovie = resultArray.getJSONObject(i);
 
@@ -263,8 +257,10 @@ public class MainActivity extends AppCompatActivity {
                 String rating = currentMovie.getString("vote_average");
                 String movieId = currentMovie.getString("id");
 
-                // Create a new MovieObject object
+                // Create a new Movie object
                 MovieObject movieObject = new MovieObject(title, release, poster, rating, plot, movieId);
+
+                //add movies to list
                 movies.add(movieObject);
             }
         } catch (JSONException e) {
@@ -327,11 +323,11 @@ public class MainActivity extends AppCompatActivity {
 
     //try creating a list of all favorite movies
     public void getFavoriteMovies() {
-        // Get the isntance of the database
+        // Get the instance of the database
         mHelper = new FavoritesDbHelper(this);
         SQLiteDatabase db = mHelper.getReadableDatabase();
-        //get the cursor you're going to use
 
+        //get the cursor
         String[] projection = {
                 FavoriteEntry._ID,
                 FavoriteEntry.COLUMN_MOVIE_ID,
@@ -342,22 +338,18 @@ public class MainActivity extends AppCompatActivity {
                 FavoriteEntry.COLUMN_MOVIE_TITLE
         };
 
+        //query database for favorites
         Cursor cursor = db.query(FavoriteEntry.TABLE_NAME, projection, null, null, null, null, null);
 
-        ImageView posterIV = (ImageView) findViewById(R.id.posterImage);
+        //ImageView posterIV = (ImageView) findViewById(R.id.posterImage);
 
-        //this is optional - if you want to return one object
-        //you don't need a list
         List<MovieObject> movieList = new ArrayList<MovieObject>();
 
-        //you should always use the try catch statement incase
-        //something goes wrong when trying to read the data
         try {
-            // looping through all rows and adding to list
+            // loop through all rows and add to list
             if (cursor.moveToFirst()) {
                 do {
-                    //the .getString(int x) method of the cursor returns the column
-                    //of the table your query returned
+                    //get column indexes
                     int nameColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_TITLE);
                     int plotColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_PLOT);
                     int posterColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_POSTER);
@@ -365,6 +357,7 @@ public class MainActivity extends AppCompatActivity {
                     int releaseColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_RELEASED);
                     int idColumnIndex = cursor.getColumnIndex(FavoriteEntry.COLUMN_MOVIE_ID);
 
+                    //get data
                     String name = cursor.getString(nameColumnIndex);
                     String plot = cursor.getString(plotColumnIndex);
                     String poster = cursor.getString(posterColumnIndex);
@@ -372,9 +365,10 @@ public class MainActivity extends AppCompatActivity {
                     String release = cursor.getString(releaseColumnIndex);
                     String id = cursor.getString(idColumnIndex);
 
-                    // Create a new MovieObject object
+                    // Create a new Movie object
                     MovieObject movieObject = new MovieObject(name, release, poster, rating, plot, id);
-                    // Adding contact to list
+
+                    // Adding movie to list
                     movieList.add(movieObject);
                 } while (cursor.moveToNext());
             }
@@ -382,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("SQL Error", e.getMessage());
             return;
         } finally {
-            //release all your resources
+            //release all  resources
             cursor.close();
             db.close();
         }
@@ -392,15 +386,14 @@ public class MainActivity extends AppCompatActivity {
         mGridView.setAdapter(mAdapter);
         mAdapter.clear();
 
-        //List<MovieObject> movies
         if (movieList != null && !movieList.isEmpty()) {
             mMovieObjectList = new ArrayList<>();
             mMovieObjectList.addAll(movieList);
             mAdapter.addAll(movieList);
             mGridView.setVisibility(View.VISIBLE);
         } else {
-            //ifnonefound,displaynomoviesfoundtext
-            mEmptyTextView.setText(R.string.noMovies);
+            //if none found, display no movies found text
+            mEmptyTextView.setText(R.string.noFavorites);
             mGridView.setVisibility(GONE);
         }
 

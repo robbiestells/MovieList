@@ -16,7 +16,7 @@ public class MovieObject implements Parcelable {
     private String plotSyn;
     private String movieId;
 
-    public MovieObject(String title, String release, String poster, String vote, String plot, String id){
+    public MovieObject(String title, String release, String poster, String vote, String plot, String id) {
         movieTitle = title;
         releaseDate = release;
         posterUrl = poster;
@@ -25,7 +25,7 @@ public class MovieObject implements Parcelable {
         movieId = id;
     }
 
-    private MovieObject(Parcel in){
+    private MovieObject(Parcel in) {
         movieTitle = in.readString();
         releaseDate = in.readString();
         posterUrl = in.readString();
@@ -49,35 +49,37 @@ public class MovieObject implements Parcelable {
         parcel.writeString(movieId);
     }
 
-    public static final Parcelable.Creator<MovieObject> CREATOR = new Parcelable.Creator<MovieObject>(){
-        public MovieObject createFromParcel(Parcel parcel){
+    public static final Parcelable.Creator<MovieObject> CREATOR = new Parcelable.Creator<MovieObject>() {
+        public MovieObject createFromParcel(Parcel parcel) {
             return new MovieObject(parcel);
         }
 
-        public MovieObject[] newArray(int size){
+        public MovieObject[] newArray(int size) {
             return new MovieObject[size];
         }
     };
 
-    public String getMovieTitle(){
+    public String getMovieTitle() {
         return movieTitle;
     }
 
-    public String getReleaseDate(){
+    public String getReleaseDate() {
         return releaseDate;
     }
 
-    public String getPosterUrl(){
+    public String getPosterUrl() {
         return "http://image.tmdb.org/t/p/w500" + posterUrl;
     }
 
-    public String getVoteAvg(){
+    public String getVoteAvg() {
         return voteAvg;
     }
 
-    public String getPlotSyn(){
+    public String getPlotSyn() {
         return plotSyn;
     }
 
-    public String getMovieId(){return movieId; }
+    public String getMovieId() {
+        return movieId;
+    }
 }

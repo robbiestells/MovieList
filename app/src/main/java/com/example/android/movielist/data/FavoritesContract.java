@@ -10,7 +10,9 @@ import android.provider.BaseColumns;
 
 public class FavoritesContract {
 
-    private FavoritesContract(){}
+    //purposely left blank
+    private FavoritesContract() {
+    }
 
     public static final String CONTENT_AUTHORITY = "com.example.android.movielist";
 
@@ -18,7 +20,7 @@ public class FavoritesContract {
 
     public static final String PATH_FAVORITE = "favorite";
 
-    /* Inner class that defines the table contents of the muscle group table */
+    /* Inner class that defines the table contents of the favorite group table */
     public static final class FavoriteEntry implements BaseColumns {
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_FAVORITE);
 
@@ -41,6 +43,5 @@ public class FavoritesContract {
         public static final String COLUMN_MOVIE_RELEASED = "release";
         public static final String COLUMN_MOVIE_RATING = "movie_rating";
         public static final String COLUMN_MOVIE_PLOT = "movie_plot";
-
     }
 }

@@ -28,7 +28,7 @@ public class ReviewAdapter extends ArrayAdapter<ReviewObject> {
             listViewItem = LayoutInflater.from(getContext()).inflate(R.layout.review_listview_item, parent, false);
         }
 
-        //get the current Trailer
+        //get the current Review
         ReviewObject currentReview = getItem(position);
 
         //attach content

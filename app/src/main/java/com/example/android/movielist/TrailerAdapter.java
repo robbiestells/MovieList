@@ -35,7 +35,6 @@ public class TrailerAdapter extends ArrayAdapter<TrailerObject> {
         TrailerObject currentTrailer = getItem(position);
 
         //attach poster to the listView
-
         TextView numberTV = (TextView) listViewItem.findViewById(R.id.trailerNumberTV);
         numberTV.setText("Watch Trailer " + currentTrailer.getTrailerNumber());
 

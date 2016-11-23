@@ -7,14 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.example.android.movielist.MovieObject;
 import com.example.android.movielist.R;
 import com.example.android.movielist.data.FavoritesContract.FavoriteEntry;
 import com.squareup.picasso.Picasso;
-
-import static android.R.attr.name;
 
 /**
  * Created by rsteller on 11/21/2016.
@@ -26,13 +22,16 @@ public class FavoritesCursorAdapter extends CursorAdapter {
         super(context, c, 0);
     }
 
+    //Create a new view from the gridview_item layout
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
         return LayoutInflater.from(context).inflate(R.layout.gridview_item, viewGroup, false);
     }
 
+    //add data to view
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        //get row Id
         final int itemId = cursor.getInt(cursor.getColumnIndex(FavoriteEntry._ID));
 
         //find views
@@ -46,6 +45,5 @@ public class FavoritesCursorAdapter extends CursorAdapter {
 
         //assign data to views
         Picasso.with(context).load(image).into(ivPoster);
-
     }
 }

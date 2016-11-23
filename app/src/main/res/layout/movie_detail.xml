@@ -117,7 +117,7 @@
                     android:layout_gravity="center"
                     android:background="@android:color/black"
                     android:onClick="FavoriteMovie_Clicked"
-                    android:text="Favorite"
+                    android:text="@string/addFavorite"
                     android:textColor="@android:color/holo_red_dark" />
             </LinearLayout>
 
@@ -136,7 +136,7 @@
                     android:layout_gravity="center"
                     android:background="@android:color/holo_red_dark"
                     android:onClick="UnfavoriteMovie_Clicked"
-                    android:text="Unfavorite"
+                    android:text="@string/removeFavorite"
                     android:textColor="@android:color/black" />
             </LinearLayout>
         </RelativeLayout>
@@ -144,20 +144,26 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:orientation="horizontal"
-            android:layout_margin="8dp">
+            android:layout_margin="8dp"
+            android:orientation="horizontal">
 
             <ListView
                 android:id="@+id/trailerListView"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_margin="6dp"
+                android:background="@android:color/white" />
 
             <ListView
                 android:id="@+id/reviewListView"
                 android:layout_width="0dp"
-                android:layout_weight="2"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_weight="2" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

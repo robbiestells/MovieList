@@ -11,15 +11,26 @@ public class ReviewObject {
     private String reviewContent;
     private String reviewUrl;
 
-    public ReviewObject(String id, String author, String review, String link){
+    public ReviewObject(String id, String author, String review, String link) {
         reviewId = id;
         reviewAuthor = author;
         reviewContent = review;
         reviewUrl = link;
     }
 
-    public String getReviewId(){return reviewId;}
-    public String getReviewAuthor(){return reviewAuthor;}
-    public String getReviewContent(){return reviewContent;}
-    public String getReviewUrl(){return reviewUrl;}
+    public String getReviewId() {
+        return reviewId;
+    }
+
+    public String getReviewAuthor() {
+        return reviewAuthor;
+    }
+
+    public String getReviewContent() {
+        return reviewContent;
+    }
+
+    public String getReviewUrl() {
+        return reviewUrl;
+    }
 }

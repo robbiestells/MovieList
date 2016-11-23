@@ -9,11 +9,16 @@ public class TrailerObject {
     private String trailerNumber;
     private String trailerUrl;
 
-    public TrailerObject(String number, String link){
+    public TrailerObject(String number, String link) {
         trailerNumber = number;
         trailerUrl = link;
     }
 
-    public String getTrailerNumber(){return trailerNumber;}
-    public String getTrailerUrl(){return trailerUrl;}
+    public String getTrailerNumber() {
+        return trailerNumber;
+    }
+
+    public String getTrailerUrl() {
+        return trailerUrl;
+    }
 }

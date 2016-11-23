@@ -13,8 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:horizontalSpacing="0dp"
-        android:numColumns="auto_fit"
-        />
+        android:numColumns="auto_fit" />
 
     <TextView
         android:id="@+id/empty_text_view"
