@@ -44,29 +44,26 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_margin="8dp"
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_margin="8dp"
                 android:layout_weight="1">
 
-                <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginBottom="8dp"-->
-                <!--android:layout_marginLeft="16dp"-->
-                <!--android:layout_marginTop="16dp"-->
-                <!--android:text="@string/released"-->
-                <!--android:textColor="@android:color/white" />-->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/released"
+                    android:textColor="@android:color/white" />
 
                 <TextView
                     android:id="@+id/movieDetailsDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginTop="16dp"
                     android:textColor="@android:color/white" />
 
             </LinearLayout>
@@ -74,24 +71,20 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_margin="8dp"
                 android:layout_weight="1">
 
-                <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginBottom="8dp"-->
-                <!--android:layout_marginLeft="16dp"-->
-                <!--android:layout_marginTop="16dp"-->
-                <!--android:text="@string/Score"-->
-                <!--android:textColor="@android:color/white" />-->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Score"
+                    android:textColor="@android:color/white" />
 
                 <TextView
                     android:id="@+id/movieDetailsVote"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginTop="16dp"
                     android:textColor="@android:color/white" />
             </LinearLayout>
         </LinearLayout>
@@ -107,14 +100,15 @@
 
         <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp">
 
             <LinearLayout
+                android:id="@+id/favoriteLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/holo_red_dark"
-                android:padding="1dp"
-                android:id="@+id/favoriteLayout">
+                android:padding="1dp">
 
                 <Button
                     android:id="@+id/favoriteButton"
@@ -128,11 +122,11 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/unfavoriteLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/black"
                 android:padding="1dp"
-                android:id="@+id/unfavoriteLayout"
                 android:visibility="gone">
 
                 <Button
@@ -147,16 +141,23 @@
             </LinearLayout>
         </RelativeLayout>
 
-
-        <ListView
-            android:id="@+id/trailerListView"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="100dp" />
+            android:layout_height="200dp"
+            android:orientation="horizontal"
+            android:layout_margin="8dp">
 
-        <ListView
-            android:id="@+id/reviewListView"
-            android:layout_width="match_parent"
-            android:layout_height="100dp" />
+            <ListView
+                android:id="@+id/trailerListView"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent" />
 
+            <ListView
+                android:id="@+id/reviewListView"
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                android:layout_height="match_parent" />
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
