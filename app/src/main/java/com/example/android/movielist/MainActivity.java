@@ -73,9 +73,9 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<MovieObject> mMovieObjectList;
 
-    private String sortBy;
-
     FavoritesDbHelper mHelper;
+
+    private String sortBy;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -107,9 +107,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //set default to sort by popular movies
-        sortBy = getString(R.string.popular);
-
         mEmptyTextView = (TextView) findViewById(R.id.empty_text_view);
         mGridView = (GridView) findViewById(R.id.movieGridView);
 
@@ -120,11 +117,24 @@ public class MainActivity extends AppCompatActivity {
             //display empty message if there's no saved array
             mEmptyTextView.setText(R.string.noMovies);
             mGridView.setVisibility(GONE);
+        }
+
+        if (savedInstanceState == null || !savedInstanceState.containsKey("selection")) {
+            sortBy = getString(R.string.popular);
+            //start process of loading movies
+            CheckConnection();
         } else {
-            //otherwise get the loaded list
-            mMovieObjectList = savedInstanceState.getParcelableArrayList("key");
-            mAdapter.addAll(mMovieObjectList);
-            mGridView.setAdapter(mAdapter);
+            if (savedInstanceState.getString("selection").equals(getString(R.string.popular))) {
+                sortBy = getString(R.string.popular);
+                CheckConnection();
+            } else if (savedInstanceState.getString("selection").equals(getString(R.string.top_rated))) {
+                sortBy = getString(R.string.top_rated);
+                CheckConnection();
+            } else {
+                mAdapter.clear();
+                sortBy = getString(R.string.favorite);
+                getFavoriteMovies();
+            }
         }
 
         //set click listener for the gridview and pass Movie object to details page
@@ -139,15 +149,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-        //start process of loading movies
-        CheckConnection();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (mMovieObjectList != null) {
             outState.putParcelableArrayList("key", mMovieObjectList);
+            outState.putString("selection", sortBy);
             super.onSaveInstanceState(outState);
         }
     }
